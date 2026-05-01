@@ -3,11 +3,13 @@
  *
  * Inspired by fpscanner's FingerprintScanner class (Antoine Vastel, MIT).
  * Two-phase evaluation:
- *   Phase 1 — Signal collection (behavioral + fingerprint gathered at flush time)
+ *   Phase 1 — Signal collection (behavioral + fingerprint + network)
  *   Phase 2 — Detection rules (analysis runs after collection is complete)
  *
- * Behavioral collectors are stateful (they accumulate events over the session lifetime).
- * Fingerprint collectors are stateless (called once at flush time, no lifecycle).
+ * Signals are organized into three pillars that match the file layout under
+ * `signals/`: behavioral (event-driven, stateful), fingerprint (one-shot
+ * environment reads), and network (timing + connection metadata; mixes
+ * stateful and stateless collectors).
  */
 
 import { attachKeystrokeCollector }  from './signals/behavioral/keystroke'
@@ -27,6 +29,10 @@ import {
   resetAudioFingerprint,
 } from './signals/fingerprint/audio'
 
+import { attachReactionCollector }   from './signals/network/reaction'
+import { collectConnectionSignal }   from './signals/network/connection'
+import { collectTimingSignal }       from './signals/network/timing'
+
 import { detectHeadless }            from './detections/isHeadless'
 import { detectScripted }            from './detections/isScripted'
 import { detectLLMAgent }            from './detections/isLLMAgent'
@@ -39,28 +45,38 @@ import type {
   CorrectionSignals,
   PasteSignals,
   ScrollSignals,
+  ReactionSignals,
   CollectedSignals,
   FingerprintSignals,
   Detections,
   BehaviorPayload,
 } from './types'
 
-type BehavioralCollectors = {
+/**
+ * Stateful collectors — anything that attaches event listeners and accumulates
+ * data over the session. Most live in behavioral/, but reaction is in network/.
+ * The category is structural (where the file lives), the type below is about
+ * the lifecycle pattern.
+ */
+type AttachedCollectors = {
+  // behavioral
   keystroke: Collector<KeystrokeSignals>
   mouse: Collector<MouseSignals>
   touch: Collector<TouchSignals>
   correction: Collector<CorrectionSignals>
   paste: Collector<PasteSignals>
   scroll: Collector<ScrollSignals>
+  // network
+  reaction: Collector<ReactionSignals>
 }
 
 export class BehaviorScanner {
   #startedAt: number = 0
-  #collectors: BehavioralCollectors | null = null
+  #collectors: AttachedCollectors | null = null
   #fingerprintCache: FingerprintSignals | null = null
 
   /**
-   * Attach all behavioral signal collectors to the target form element.
+   * Attach all stateful signal collectors to the target form element.
    * Call as early as possible — signals only accumulate while attached.
    */
   attach(formEl: HTMLElement): this {
@@ -72,6 +88,7 @@ export class BehaviorScanner {
       correction: attachCorrectionCollector(formEl),
       paste:      attachPasteCollector(formEl),
       scroll:     attachScrollCollector(),
+      reaction:   attachReactionCollector(formEl),
     }
     // Kick off async fingerprints so they're ready by the time buildPayload() is called.
     prewarmAudioFingerprint()
@@ -80,7 +97,7 @@ export class BehaviorScanner {
 
   /**
    * Collect all signals and run detection rules.
-   * Safe to call before detach() — collectors stay attached.
+   * Safe to call repeatedly — collectors stay attached until detach().
    */
   buildPayload(sessionId: string): BehaviorPayload {
     if (!this.#collectors) throw new Error('[behavior-sdk] call attach() before buildPayload()')
@@ -98,6 +115,7 @@ export class BehaviorScanner {
     this.#collectors.correction.detach()
     this.#collectors.paste.detach()
     this.#collectors.scroll.detach()
+    this.#collectors.reaction.detach()
     this.#collectors = null
     this.#fingerprintCache = null
     resetAudioFingerprint()
@@ -119,6 +137,11 @@ export class BehaviorScanner {
         scroll:     c.scroll.getSignals(),
       },
       fingerprint: this.#getFingerprint(),
+      network: {
+        reaction:   c.reaction.getSignals(),
+        connection: collectConnectionSignal(),
+        timing:     collectTimingSignal(),
+      },
     }
   }
 
@@ -136,7 +159,6 @@ export class BehaviorScanner {
       webgl:     collectWebGLSignal(),
       audio:     collectAudioSignal(),
     }
-    // Don't cache until both async + DOM-dependent fingerprints are valid.
     const ready = fingerprint.iframe.consistent && fingerprint.audio.supported
     if (ready) this.#fingerprintCache = fingerprint
     return fingerprint
@@ -151,3 +173,4 @@ export class BehaviorScanner {
     }
   }
 }
+

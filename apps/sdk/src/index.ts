@@ -69,6 +69,7 @@ export type {
   CollectedSignals,
   BehavioralSignals,
   FingerprintSignals,
+  NetworkSignals,
   DetectionResult,
   Detections,
   CollectOptions,

@@ -64,6 +64,35 @@ export interface AudioSignals {
 }
 
 // ---------------------------------------------------------------------------
+// Network signal shapes
+// (Network is a third signal pillar alongside behavioral and fingerprint:
+//  it covers reaction-time behavior, the browser-reported connection class,
+//  and the navigation-timing breakdown captured at page load.)
+// ---------------------------------------------------------------------------
+
+export interface ReactionSignals {
+  firstInputDelay: number | null  // ms from first focus → first input; null if no input yet
+  minInputDelay: number | null    // smallest focus→input delay observed; null if none
+}
+
+export interface ConnectionSignals {
+  effectiveType: string | null  // "4g" | "3g" | "2g" | "slow-2g" | null if unsupported
+  rtt: number | null            // browser-reported round-trip time in ms
+  downlink: number | null       // estimated downlink bandwidth in Mbps
+  saveData: boolean | null      // true if user has data-saver enabled
+  supported: boolean            // false on Firefox / Safari (API not implemented)
+}
+
+export interface TimingSignals {
+  dnsMs: number | null    // domainLookupEnd - domainLookupStart
+  tcpMs: number | null    // connectEnd - connectStart
+  tlsMs: number | null    // connectEnd - secureConnectionStart (null if not HTTPS)
+  ttfbMs: number | null   // responseStart - requestStart
+  domLoadMs: number | null // domContentLoadedEventEnd - domContentLoadedEventStart
+  supported: boolean
+}
+
+// ---------------------------------------------------------------------------
 // Composite containers
 // ---------------------------------------------------------------------------
 
@@ -84,9 +113,16 @@ export interface FingerprintSignals {
   audio: AudioSignals
 }
 
+export interface NetworkSignals {
+  reaction: ReactionSignals
+  connection: ConnectionSignals
+  timing: TimingSignals
+}
+
 export interface CollectedSignals {
   behavioral: BehavioralSignals
   fingerprint: FingerprintSignals
+  network: NetworkSignals
 }
 
 // ---------------------------------------------------------------------------

@@ -46,6 +46,14 @@ export function detectScripted(signals: CollectedSignals): DetectionResult {
   if (charCount > 50 && correctionRatio === 0)
     reasons.push(`zero corrections in ${charCount} chars (humans typo and fix)`)
 
+  // ── Reaction time (network pillar) ──────────────────────────────────────
+  // Time between focus and first input is bounded by physiology (~80-300ms).
+  // Sub-50ms is essentially impossible for a human — only a script that calls
+  // input.value=… and dispatches an event can hit that range.
+  const { minInputDelay } = signals.network.reaction
+  if (minInputDelay !== null && minInputDelay < 50)
+    reasons.push(`first input ${minInputDelay.toFixed(0)}ms after focus (humans need >80ms physiologically)`)
+
   return {
     detected: reasons.length >= 2,
     severity: reasons.length >= 3 ? 'high' : 'medium',
