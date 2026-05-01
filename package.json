@@ -1,0 +1,16 @@
+{
+  "name": "zoven-monorepo",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Behavior analysis SDK + demo (npm workspaces)",
+  "type": "module",
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "build": "npm run build -w behavior-sdk",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "demo": "npm run dev -w demo",
+    "demo:build": "npm run build -w behavior-sdk && npm run build -w demo"
+  }
+}

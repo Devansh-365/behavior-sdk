@@ -1,0 +1,19 @@
+# dependencies
+node_modules/
+
+# build output
+dist/
+
+# os / editor
+.DS_Store
+*.log
+
+# tooling state (not project files)
+.claude/
+.omc/
+
+# scratch / draft files (not part of the repo)
+n.md
+pm-findings.md
+pm-mindmaps.md
+/architecture.md
