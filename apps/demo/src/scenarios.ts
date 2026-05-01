@@ -8,6 +8,7 @@
  * Detection thresholds (from apps/sdk/src/detections/):
  *   isScripted: ≥2 of  no-pointer | curvature variance < 0.05 | dwell var < 2
  *                       | flight var < 5 | paste ratio > 0.9 | zero corrections in >50 chars
+ *                       | first input <50ms after focus (reaction time)
  *   isLLMAgent: ≥2 of  paste ratio > 0.8 | no-scroll & charCount > 20
  *                       | <8s & charCount > 40 | flight variance < 10
  */
@@ -86,6 +87,8 @@ async function synthesizeHumanFlow(form: HTMLFormElement): Promise<void> {
   }
 
   name.focus()
+  // Human reaction delay between focus and first keystroke (~200-400ms)
+  await sleep(220 + Math.random() * 180)
   for (const ch of 'Ada Lovelace') {
     const dwell = 50 + Math.random() * 100
     await fireKeyPair(name, ch, dwell)
@@ -97,6 +100,8 @@ async function synthesizeHumanFlow(form: HTMLFormElement): Promise<void> {
   await sleep(300)
 
   message.focus()
+  // Same reaction delay before starting to type in a new field
+  await sleep(200 + Math.random() * 200)
   // Type the message but with a typo that gets corrected with Backspace
   // — humans typo, see it, hit backspace, retype.
   const phrase1 = 'I would like to lern' // typo: "lern"
@@ -160,10 +165,14 @@ async function synthesizeLLMAgent(form: HTMLFormElement): Promise<void> {
   }
 
   name.focus()
+  // LLM agents typically have model "think time" before the paste fires —
+  // simulate that so the reaction rule (<50ms) doesn't also flag this as scripted.
+  await sleep(280)
   firePaste(name, 'agent@example.com')
   await sleep(150)
 
   message.focus()
+  await sleep(260)
   const chunk1 =
     'Thank you for your inquiry. Based on the requirements you described, '
   const chunk2 =

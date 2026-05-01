@@ -6,6 +6,7 @@ import { ScenariosPanel } from './components/ScenariosPanel'
 import { SignalsCard } from './components/SignalsCard'
 import { DetectionsCard } from './components/DetectionsCard'
 import { FingerprintCard } from './components/FingerprintCard'
+import { NetworkCard } from './components/NetworkCard'
 import { PayloadViewer } from './components/PayloadViewer'
 import { computeVerdict } from './lib/verdict'
 import { useScanner } from './lib/useScanner'
@@ -40,11 +41,12 @@ export default function App(): JSX.Element {
               </section>
             </div>
 
-            {/* Right column: signals + detections + fingerprint */}
+            {/* Right column: signals + detections + fingerprint + network */}
             <div className="space-y-6">
               <SignalsCard signals={payload?.signals.behavioral ?? null} />
               <DetectionsCard detections={payload?.detections ?? null} />
               <FingerprintCard fingerprint={payload?.signals.fingerprint ?? null} />
+              <NetworkCard network={payload?.signals.network ?? null} />
             </div>
           </div>
 
