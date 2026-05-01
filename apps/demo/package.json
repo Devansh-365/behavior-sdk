@@ -1,0 +1,28 @@
+{
+  "name": "demo",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Live demo for behavior-sdk: form + synthetic bot scenarios",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "behavior-sdk": "*",
+    "lucide-react": "^0.460.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.2.4",
+    "@types/react": "^18.3.28",
+    "@types/react-dom": "^18.3.7",
+    "@vitejs/plugin-react": "^4.7.0",
+    "tailwindcss": "^4.2.4",
+    "typescript": "^5.8",
+    "vite": "^5.4.0"
+  }
+}
