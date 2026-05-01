@@ -1,0 +1,25 @@
+{
+  "name": "behavior-sdk",
+  "version": "0.1.0",
+  "description": "Browser-side behavior analysis SDK: classifies sessions as human / authorized AI agent / unauthorized bot",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --noEmit",
+    "dev": "tsup --watch"
+  },
+  "devDependencies": {
+    "typescript": "^5.8",
+    "tsup": "^8.0"
+  }
+}
