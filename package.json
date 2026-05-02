@@ -12,6 +12,10 @@
     "typecheck": "npm run typecheck --workspaces --if-present",
     "demo": "npm run dev -w demo",
     "demo:package": "npm run build -w behavior-sdk && USE_SDK_PACKAGE=true npm run dev -w demo",
-    "demo:build": "npm run build -w behavior-sdk && npm run build -w demo"
+    "demo:build": "npm run build -w behavior-sdk && npm run build -w demo",
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "husky": "^9.1.7"
   }
 }
