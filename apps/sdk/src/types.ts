@@ -168,6 +168,11 @@ export interface IncognitoSignals {
   method: string | null        // 'quota' | 'indexeddb' | null
 }
 
+export interface DevicePersistenceSignals {
+  deviceId: string   // stable UUID per browser profile (localStorage)
+  isNew: boolean     // true = first visit, no prior UUID found
+}
+
 export interface TimezoneSignals {
   timezone: string       // IANA timezone name (e.g. "America/New_York")
   timezoneOffset: number // minutes west of UTC (Date.getTimezoneOffset())
@@ -184,6 +189,7 @@ export interface FingerprintSignals {
   audio: AudioSignals
   incognito: IncognitoSignals
   timezone: TimezoneSignals
+  device: DevicePersistenceSignals
 }
 
 export interface NetworkSignals {

@@ -39,6 +39,7 @@ import {
   prewarmIncognitoDetection,
 } from './signals/fingerprint/incognito'
 import { collectTimezoneSignal }     from './signals/fingerprint/timezone'
+import { collectDevicePersistenceSignal } from './signals/fingerprint/device-persistence'
 
 import { attachReactionCollector }   from './signals/network/reaction'
 import { collectConnectionSignal }   from './signals/network/connection'
@@ -245,6 +246,7 @@ export class BehaviorScanner {
       audio:      collectAudioSignal(),
       incognito:  collectIncognitoSignal(),
       timezone:   collectTimezoneSignal(),
+      device:     collectDevicePersistenceSignal(),
     }
     const ready = fingerprint.iframe.consistent && fingerprint.audio.supported
     if (ready) this.#fingerprintCache = fingerprint

@@ -33,6 +33,7 @@ export function FingerprintCard({ fingerprint }: FingerprintCardProps): JSX.Elem
   const a = fp?.audio
   const inc = fp?.incognito
   const tz = fp?.timezone
+  const dev = fp?.device
   const swiftshader = (g?.renderer ?? '').toLowerCase().includes('swiftshader')
   const llvmpipe = (g?.renderer ?? '').toLowerCase().includes('llvmpipe')
 
@@ -57,6 +58,7 @@ export function FingerprintCard({ fingerprint }: FingerprintCardProps): JSX.Elem
         <Pill label="LLVMpipe" on={llvmpipe} />
         <Pill label="incognito" on={inc?.isIncognito === true} />
         <Pill label="tz mismatch" on={tz ? !tz.consistent : false} />
+        <Pill label="new device" on={dev?.isNew === true} />
       </div>
 
       <div className="mt-4 space-y-1.5 border-t border-slate-800/60 pt-3">
@@ -103,6 +105,12 @@ export function FingerprintCard({ fingerprint }: FingerprintCardProps): JSX.Elem
               : inc.isIncognito
               ? `yes (${inc.method})`
               : `no (${inc.method})`}
+          </span>
+        </div>
+        <div className="flex items-center justify-between text-xs">
+          <span className="text-slate-400">Device ID</span>
+          <span className={`font-mono ${dev?.isNew ? 'text-amber-400' : 'text-slate-200'}`}>
+            {dev ? `${dev.deviceId.slice(0, 8)}… ${dev.isNew ? '(new)' : '(returning)'}` : '—'}
           </span>
         </div>
       </div>
