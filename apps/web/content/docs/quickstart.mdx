@@ -1,0 +1,114 @@
+---
+title: Quickstart
+description: Add nyasa to any web form in under 5 minutes.
+---
+
+# Quickstart
+
+## Install
+
+```bash
+npm install @devanshhq/nyasa
+```
+
+## ESM (bundler)
+
+The most common integration path. Import `collect`, call it once when the page loads, and nyasa handles the rest.
+
+```ts
+import { collect } from '@devanshhq/nyasa'
+
+const handle = collect('#signup-form', {
+  endpoint: 'https://your-api.example.com/score',
+  sessionId: crypto.randomUUID(),
+})
+```
+
+`collect` returns immediately. It attaches signal collectors to the form and sets up two automatic flush triggers:
+
+- **Form submit**: the SDK builds the payload and sends it before the form navigates away.
+- **Tab close or backgrounding**: the SDK catches the `visibilitychange` event and flushes then too, so you get data even when users abandon the form mid-way.
+
+You do not need to call anything else for a standard form.
+
+## Script tag (IIFE)
+
+If you are not using a bundler, load the prebuilt global bundle instead.
+
+```html
+<script src="https://cdn.example.com/@devanshhq/nyasa/index.global.js"></script>
+<script>
+  BehaviorSDK.collect('#signup-form', {
+    endpoint: 'https://your-api.example.com/score',
+    sessionId: crypto.randomUUID(),
+  })
+</script>
+```
+
+The global name is `BehaviorSDK`. Everything else behaves identically to the ESM build.
+
+## SPAs and manual control
+
+In a single-page app, the form may not submit in the traditional sense. Use `flush()` to send the payload at the right moment, and `stop()` to clean up without sending.
+
+```ts
+import { collect } from '@devanshhq/nyasa'
+
+const handle = collect('#checkout-form', {
+  endpoint: '/api/score',
+  sessionId: crypto.randomUUID(),
+})
+
+// On your custom submit handler:
+async function onSubmit() {
+  handle.flush()       // sends payload via sendBeacon, detaches collectors
+  await submitToApi()
+}
+
+// On unmount or route change without a submit:
+function onUnmount() {
+  handle.stop()        // detaches collectors, does NOT send
+}
+```
+
+Both `flush()` and `stop()` are idempotent. Calling either more than once does nothing.
+
+## React hook pattern
+
+For React apps, use `BehaviorScanner` directly to keep control inside a hook.
+
+```ts
+import { useEffect, useRef } from 'react'
+import { BehaviorScanner } from '@devanshhq/nyasa'
+
+function useNyasa(sessionId: string) {
+  const formRef = useRef<HTMLFormElement>(null)
+  const scannerRef = useRef<BehaviorScanner | null>(null)
+
+  useEffect(() => {
+    const form = formRef.current
+    if (!form) return
+
+    const scanner = new BehaviorScanner().attach(form)
+    scannerRef.current = scanner
+
+    return () => scanner.detach()
+  }, [sessionId])
+
+  function getPayload() {
+    return scannerRef.current?.buildPayload(sessionId) ?? null
+  }
+
+  return { formRef, getPayload }
+}
+```
+
+## Verifying the integration
+
+Open your browser's Network tab and filter for requests to your endpoint. After submitting the form, you should see a `sendBeacon` POST with a JSON body. The payload will contain a `detections` object and a `verdict` field.
+
+`sendBeacon` requests appear under the "Ping" type in Chrome DevTools. If you do not see it, try filtering by your endpoint URL directly.
+
+## What to do with the payload
+
+Forward the payload body to the Zoven scoring API. The API will return an actor type and risk score. For the exact payload shape, see [Payload](/docs/payload).

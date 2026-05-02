@@ -1,0 +1,118 @@
+---
+title: API Reference
+description: Full reference for the collect() function, BehaviorScanner class, and exported types.
+---
+
+# API Reference
+
+## collect()
+
+The primary entry point. Attaches all collectors to a form, wires up automatic flush triggers, and returns a handle for manual control.
+
+```ts
+function collect(
+  selectorOrEl: string | HTMLElement,
+  options: CollectOptions
+): CollectHandle
+```
+
+### Parameters
+
+**`selectorOrEl`**
+
+A CSS selector string passed to `document.querySelector`, or a direct `HTMLElement` reference. Throws if the selector matches nothing.
+
+**`options`**
+
+```ts
+interface CollectOptions {
+  endpoint: string   // URL where the payload is sent via sendBeacon
+  sessionId: string  // unique identifier for this session
+}
+```
+
+Use `crypto.randomUUID()` to generate a session ID. The session ID is included in the payload and ties it to the session in the Zoven scoring API.
+
+### Return value
+
+```ts
+interface CollectHandle {
+  flush: () => void  // build payload, sendBeacon to endpoint, then detach. Idempotent.
+  stop:  () => void  // detach all listeners without sending. Idempotent.
+}
+```
+
+### Automatic flush behavior
+
+`collect` registers two flush triggers automatically:
+
+1. A `submit` listener on the form that contains the target element (or the element itself if it is a `<form>`).
+2. A `visibilitychange` listener that flushes when `document.visibilityState === 'hidden'`.
+
+Both use `{ once: true }`. If you call `flush()` or `stop()` manually before either trigger fires, the automatic triggers become no-ops.
+
+---
+
+## BehaviorScanner
+
+Lower-level class for advanced use cases: building payloads on demand, wiring up custom flush logic, or integrating into a framework component lifecycle.
+
+```ts
+class BehaviorScanner {
+  attach(formEl: HTMLElement): this
+  buildPayload(sessionId: string): BehaviorPayload
+  detach(): void
+}
+```
+
+### attach(formEl)
+
+Attaches 13 stateful collectors to the target element and document (12 behavioral and 1 network reaction collector). Also starts async prewarming for the audio fingerprint and incognito detection, so those results are ready by the time `buildPayload()` is called.
+
+Returns `this` for chaining. Signals only accumulate while attached, so call this as early as possible.
+
+```ts
+const scanner = new BehaviorScanner()
+scanner.attach(document.querySelector('#form')!)
+```
+
+### buildPayload(sessionId)
+
+Collects all signals, runs all detection rules, derives a client-side verdict, and returns a complete `BehaviorPayload`. Safe to call repeatedly. Collectors stay attached between calls, so you can poll for a live payload.
+
+```ts
+const payload = scanner.buildPayload(sessionId)
+// payload.signals, payload.detections, payload.verdict are all populated
+```
+
+Throws if called before `attach()`.
+
+### detach()
+
+Removes all event listeners and resets the scanner's internal state. After calling `detach()`, calling `buildPayload()` will throw.
+
+Safe to call multiple times. The second and subsequent calls are no-ops.
+
+---
+
+## Types
+
+All types are available as named imports from `@devanshhq/nyasa`.
+
+```ts
+import type {
+  BehaviorPayload,
+  CollectedSignals,
+  BehavioralSignals,
+  FingerprintSignals,
+  NetworkSignals,
+  InputTypeSignals,
+  UploadSignals,
+  DetectionResult,
+  Detections,
+  CollectOptions,
+  CollectHandle,
+} from '@devanshhq/nyasa'
+```
+
+Full type definitions for every signal shape are in the [Signals](/docs/signals) reference. The full payload shape is in [Payload](/docs/payload).

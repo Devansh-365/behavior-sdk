@@ -1,0 +1,329 @@
+---
+title: Signals
+description: The three signal pillars collected by nyasa: behavioral, fingerprint, and network.
+---
+
+# Signals
+
+nyasa organizes collected data into three pillars. Each one covers a different class of evidence about who or what is operating the browser.
+
+| Pillar | Collectors | What it catches |
+|--------|-----------|----------------|
+| Behavioral | 12 | Scripted bots, LLM agents, upload automation |
+| Fingerprint | 8 | Headless browsers, CDP-based automation, spoofed environments |
+| Network | 3 | Sub-human reaction times, datacenter connection signatures |
+
+---
+
+## Behavioral
+
+Behavioral signals come from event listeners attached to the form element and document. They accumulate in real time as the user interacts. These are the richest signals for distinguishing humans from automation because they reflect physical and cognitive constraints that are hard to replicate programmatically without leaving traces.
+
+### Keystroke
+
+```ts
+interface KeystrokeSignals {
+  dwells: number[]   // how long each key was held, in ms
+  flights: number[]  // time between keyup and next keydown, in ms
+}
+```
+
+Keystroke timing is the most reliable behavioral signal. Human typing has high variance in both dwell and flight times because motor control is inherently imprecise. Scripts that dispatch keyboard events synthetically produce near-zero variance. Even scripts that deliberately inject random noise tend to produce variance an order of magnitude below the human baseline.
+
+Human baseline: dwell variance above 50ms squared, flight variance above 200ms squared.
+
+### Mouse
+
+```ts
+interface MouseSignals {
+  pathLength: number      // total number of recorded mouse positions
+  curvature: number[]     // angular delta at each point along the path, in radians
+  stillnessRatio: number  // fraction of samples where movement was under 2px
+}
+```
+
+Human mouse paths have natural curvature variance from neuromuscular tremor and unconscious drift. Scripted mouse paths are either perfectly straight, follow a smooth programmatic curve, or absent entirely. The curvature array captures angular change at each recorded point; a human session shows high variance across that array.
+
+Human baseline: curvature variance above 0.1 rad squared.
+
+### Touch
+
+```ts
+interface TouchSignals {
+  touchCount: number  // touchstart events (finger-down count)
+  taps: number        // touchend events
+  pathLength: number  // touchmove events
+}
+```
+
+Used alongside mouse signals. On a mobile device, zero mouse activity alongside zero touch activity is a strong pointer that no real user interaction occurred. The SDK accounts for this: the scripted bot detection will not flag a mobile session for "no mouse" alone.
+
+### Correction
+
+```ts
+interface CorrectionSignals {
+  backspaceCount: number   // Backspace key presses
+  deleteCount: number      // Delete key presses
+  correctionRatio: number  // (backspaces + deletes) / typed chars
+}
+```
+
+Humans make typos and fix them. Long input with a correction ratio of zero is a reliable signal that the form was filled by automation. A bot that deliberately inserts random backspaces to mimic this behavior will produce a different statistical pattern than organic correction.
+
+### Paste
+
+```ts
+interface PasteSignals {
+  pasteRatio: number  // pastedChars / totalChars (0 = all typed, 1 = all pasted)
+  pasteCount: number  // number of paste events
+  charCount: number   // total characters entered, typed and pasted combined
+}
+```
+
+LLM agents typically compose their response in the model's context then paste it into form fields in one or a few large chunks. A high paste ratio across all fields, combined with no scroll events and fast completion, is a strong LLM indicator.
+
+### Scroll
+
+```ts
+interface ScrollSignals {
+  depths: number[]      // scrollY values at each scroll event, in px
+  timestamps: number[]  // performance.now() at each scroll event
+}
+```
+
+Humans almost always scroll while reading or filling out a longer form. Agents that batch-fill fields programmatically rarely scroll at all. Zero scroll events alongside substantial character input is one of the signals used in LLM detection.
+
+### Input origin
+
+```ts
+interface InputTypeSignals {
+  typed: number        // insertText and insertReplacementText events
+  pasted: number       // insertFromPaste events
+  dropped: number      // insertFromDrop events
+  deleted: number      // deleteContent events
+  programmatic: number // InputEvent with no inputType (dispatched by a script)
+}
+```
+
+Every `InputEvent` fired by a real keyboard or clipboard interaction carries an `inputType` string. When a script dispatches a bare `InputEvent` without an `inputType`, it appears as programmatic here. A high programmatic count alongside zero typed, pasted, or dropped events means the form was filled by code that bypassed the browser's input APIs entirely.
+
+### Upload
+
+```ts
+interface UploadSignals {
+  pickerCount: number        // change events on file inputs (user opened the picker)
+  dragDropCount: number      // drop events with files
+  programmaticCount: number  // file count grew without a picker or drop event
+  filesAttached: number      // total files currently attached to the form
+  exifResults: ExifSignals[] // metadata analysis for each file from the picker
+}
+
+interface ExifSignals {
+  fileType: 'jpeg' | 'pdf' | 'png' | 'unknown'
+  hasExif: boolean           // JPEG only: a missing EXIF block is suspicious for a claimed photo
+  software: string | null    // EXIF Software tag, or PDF Producer value
+  aiGenerated: boolean       // software string matched a known AI image generator
+  metadataEmpty: boolean     // no readable metadata found in the file
+}
+```
+
+Files attached without a picker `change` event or a `drop` event were attached programmatically via `DataTransfer`. The EXIF and PDF metadata analysis is a secondary layer: it detects AI-generated images and metadata-scrubbed documents that might be submitted as identity documents.
+
+### Visibility
+
+```ts
+interface VisibilitySignals {
+  hiddenCount: number    // times the tab transitioned to hidden visibilityState
+  blurCount: number      // window blur events
+  totalHiddenMs: number  // cumulative ms the page was not visible
+}
+```
+
+Tab switching and window focus loss during form filling are normal human behaviors. Agents typically produce neither.
+
+### Click precision
+
+```ts
+interface ClickSignals {
+  count: number
+  centerOffsets: Array<[number, number]>  // [dx, dy] px from element bounding box center
+  targeted: number                         // clicks on inputs, buttons, selects, or links
+}
+```
+
+Human clicks land with natural scatter of roughly 5 to 20px from the center of the target element. Automation frameworks like Playwright click at the exact bounding box center by default, producing mean offsets under 3px across multiple clicks.
+
+### Session rhythm
+
+```ts
+interface SessionRhythmSignals {
+  eventGaps: number[]      // ms between consecutive events
+  maxGapMs: number         // largest inactive period observed in the session
+  burstCount: number       // distinct activity bursts (separated by gaps over 800ms)
+  meanBurstGapMs: number   // mean silence between bursts
+  gapVariance: number      // variance of the inter-burst gaps
+}
+```
+
+LLM agents operate in a cycle: a burst of input during the Act phase, then silence during the Decide phase, then another burst. This produces a sawtooth pattern of regular gaps that rarely appears in human sessions. The gap variance is low because inference time is consistent. In a human session, pauses are irregular.
+
+### Field timing
+
+```ts
+interface FieldTimingSignals {
+  fieldDwells: Record<string, number[]>  // field name or id mapped to ms spent focused per visit
+  instantFills: number                    // field visits where content appeared in under 100ms
+  totalFields: number                     // distinct fields visited
+}
+```
+
+An agent that batch-fills a form by setting field values programmatically will produce multiple instant fill events across distinct fields. Two or more instant fills across at least two fields is a reliable LLM-act pattern.
+
+---
+
+## Fingerprint
+
+Fingerprint signals are stateless environment reads. They do not depend on any user interaction. They are collected once and cached for the session lifetime, with a retry on the next `buildPayload()` call if the first attempt was incomplete.
+
+### Webdriver markers
+
+```ts
+interface WebdriverSignals {
+  webdriver: boolean         // navigator.webdriver is true
+  cdpPresent: boolean        // Chrome DevTools Protocol objects found in window
+  playwrightPresent: boolean // Playwright injection markers found in window
+}
+```
+
+Headless browsers leave detectable artifacts. `navigator.webdriver` is the most obvious. Automation frameworks like Playwright also inject their own runtime objects into the browser context.
+
+### Iframe consistency
+
+```ts
+interface IframeSignals {
+  consistent: boolean
+  parentPluginCount: number
+  iframePluginCount: number
+}
+```
+
+In a real browser, `navigator.plugins.length` is identical in the parent frame and in an iframe. Headless browsers often return inconsistent counts because their plugin simulation is incomplete.
+
+### Canvas fingerprint
+
+```ts
+interface CanvasSignals {
+  hash: string       // last 20 chars of a canvas data URL (stable per device and GPU)
+  supported: boolean
+}
+```
+
+Canvas rendering is deterministic per GPU and font stack. The hash characterizes the rendering environment and can identify known headless rendering profiles.
+
+### WebGL renderer
+
+```ts
+interface WebGLSignals {
+  vendor: string
+  renderer: string
+  supported: boolean
+}
+```
+
+Headless Chrome running on a server without a GPU falls back to SwiftShader, a software renderer. Containerized browsers often use LLVMpipe. Real browsers report the actual GPU vendor and renderer string. These are visible in the renderer field.
+
+### Audio fingerprint
+
+```ts
+interface AudioSignals {
+  hash: string       // hash of an OfflineAudioContext render output
+  supported: boolean
+}
+```
+
+Audio rendering is deterministic per environment. The hash is prewarmed asynchronously when `attach()` is called so it is ready by the time `buildPayload()` runs. It can identify known headless audio profiles.
+
+### Incognito detection
+
+```ts
+interface IncognitoSignals {
+  isIncognito: boolean | null  // null if the method was inconclusive
+  method: string | null        // 'quota' or 'indexeddb'
+}
+```
+
+Incognito mode caps `StorageManager.estimate()` quota significantly and disables IndexedDB writes. Both differences are detectable without requesting any browser permission. `isIncognito: null` means neither method produced a conclusive result.
+
+### Timezone and locale consistency
+
+```ts
+interface TimezoneSignals {
+  timezone: string        // IANA timezone name (e.g. "America/New_York")
+  timezoneOffset: number  // minutes west of UTC
+  language: string        // navigator.language
+  languages: string[]     // navigator.languages
+  consistent: boolean     // false if the timezone region contradicts the language country
+}
+```
+
+A VPN or datacenter proxy changes the IP geolocation but cannot change the browser's timezone or locale settings. A mismatch between the two is a signal of location spoofing. `consistent: false` is set when the timezone region and language country are geographically incompatible.
+
+### Device persistence
+
+```ts
+interface DevicePersistenceSignals {
+  deviceId: string  // stable UUID written to localStorage on first visit
+  isNew: boolean    // true if no prior UUID was found (first visit on this browser profile)
+}
+```
+
+The SDK writes a UUID to `localStorage` on first visit and reads it back on subsequent visits. This provides a persistent device identifier that survives page reloads and browser restarts. If `localStorage` is blocked or unavailable, the SDK falls back to an ephemeral UUID for the session only.
+
+`isNew: true` on a suspicious session means the actor has either never visited before or cleared their browser storage.
+
+---
+
+## Network
+
+Network signals combine one stateful collector (reaction time) with two one-shot reads taken at page load (connection info and navigation timing).
+
+### Reaction time
+
+```ts
+interface ReactionSignals {
+  firstInputDelay: number | null   // ms from first focus event to first input; null if no input yet
+  minInputDelay: number | null     // smallest focus-to-input delay observed across all fields
+  engagementDelayMs: number | null // ms from attach() to first focus event
+}
+```
+
+Human reaction time between focusing a field and starting to type is physiologically bounded. It cannot be below roughly 80ms for a human. Sub-50ms reaction time is essentially impossible for a person and is reliably produced by scripts that set `input.value` and fire a synthetic event immediately after focus.
+
+### Connection
+
+```ts
+interface ConnectionSignals {
+  effectiveType: string | null  // "4g" | "3g" | "2g" | "slow-2g"
+  rtt: number | null            // browser-reported round-trip time in ms
+  downlink: number | null       // estimated bandwidth in Mbps
+  saveData: boolean | null      // true if the user has data-saver mode enabled
+  supported: boolean            // false on Firefox and Safari
+}
+```
+
+Read from `navigator.connection` (Network Information API). Not supported in Firefox or Safari; `supported` will be `false` on those browsers and all other fields will be `null`. Datacenter connections tend to report low RTT and high downlink.
+
+### Page load timing
+
+```ts
+interface TimingSignals {
+  dnsMs: number | null     // DNS lookup duration in ms
+  tcpMs: number | null     // TCP connection duration in ms
+  tlsMs: number | null     // TLS handshake duration in ms; null on plain HTTP
+  ttfbMs: number | null    // time to first byte in ms
+  domLoadMs: number | null // DOMContentLoaded event duration in ms
+  supported: boolean
+}
+```
+
+Read from the Navigation Timing API. These values are fixed at page load time and do not change during the session. Datacenter and bot infrastructure typically shows near-zero DNS and TCP times because it resolves from within the same network as the target server.

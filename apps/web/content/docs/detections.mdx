@@ -1,0 +1,125 @@
+---
+title: Detections
+description: How nyasa classifies sessions: the detection rules, their thresholds, and how to interpret results.
+---
+
+# Detections
+
+Detection rules are pure functions. They take the collected signals as input and return a `DetectionResult`. They do not share state, do not mutate signals, and have no side effects.
+
+```ts
+interface DetectionResult {
+  detected: boolean
+  severity: 'high' | 'medium' | 'low'
+  reasons: string[]  // human-readable explanation of what fired and why
+}
+```
+
+Most rules require two or more independent signals to fire. This threshold controls false positives: a single unusual data point (a fast typist, a mobile user with no mouse) should not get flagged. Each reason in the `reasons` array includes the actual measured value alongside the threshold it violated.
+
+---
+
+## isHeadless
+
+Detects headless browsers, CDP-controlled Chromium, and Playwright, Puppeteer, or Selenium drivers.
+
+**Fires when any single marker is present.** Headless markers are individually reliable enough that the two-signal threshold does not apply here.
+
+| Signal | What is checked |
+|--------|----------------|
+| `navigator.webdriver === true` | Standard marker set by the WebDriver protocol |
+| CDP objects in `window` | Chrome DevTools Protocol runtime artifacts left in the global scope |
+| Playwright markers in `window` | Playwright's own injection artifacts |
+| Iframe plugin count mismatch | Plugin count differs between parent frame and iframe |
+| WebGL renderer includes "SwiftShader" | Software renderer, typical of headless Chrome on a server without a GPU |
+| WebGL renderer includes "llvmpipe" | Software renderer, typical of containerized or Linux CI browsers |
+
+**Severity:** `high` if 2 or more markers are present, `medium` if exactly 1.
+
+---
+
+## isScripted
+
+Detects scripted bots that fill forms with mechanical precision and typically avoid mouse movement.
+
+**Fires when 2 or more of these conditions are met:**
+
+| Condition | Threshold |
+|-----------|-----------|
+| No pointer activity | Zero mouse path points AND zero touch events |
+| Mouse path too straight | Curvature variance below 0.05 rad squared (human baseline above 0.1) |
+| Keystroke dwells too uniform | Dwell variance below 2ms squared (human baseline above 50ms squared) |
+| Keystroke flights too uniform | Flight variance below 5ms squared (human baseline above 200ms squared) |
+| Paste dominates | Paste ratio above 90% with more than 10 total chars |
+| No corrections | Zero corrections over 50 or more chars of input |
+| Sub-human reaction | Focus-to-input delay under 50ms (physiological minimum is roughly 80ms) |
+| Programmatic fill | More than 5 programmatic InputEvents with zero typed, pasted, or dropped events |
+
+**Severity:** `high` if 3 or more conditions match, `medium` if exactly 2.
+
+The no-pointer condition is mobile-aware. On a mobile device with touch input, zero mouse activity alone is expected. The rule requires both mouse and touch to be absent before counting it as a signal.
+
+---
+
+## isLLMAgent
+
+Detects LLM agents in their Act phase: composing output internally and pasting it, or typing at machine speed via a framework like browser-use or Playwright.
+
+**Fires when 2 or more of these conditions are met:**
+
+| Condition | Threshold |
+|-----------|-----------|
+| Heavy paste | Paste ratio above 80% with more than 5 chars entered |
+| No scroll with substantial input | Zero scroll events alongside more than 20 chars entered |
+| Fast completion | More than 40 chars entered in under 8 seconds |
+| Pixel-perfect clicks | Mean click offset from element center below 3px (Playwright clicks at exact center) |
+| Mouse mostly still | Mouse still for more than 70% of the session while more than 20 chars are entered |
+| Machine-speed burst | 3 or more consecutive key flights below 20ms |
+| Uniform inter-keystroke timing | Flight variance below 10ms squared across more than 10 flights |
+| Batch field fill | 2 or more distinct fields filled in under 100ms each |
+| LLM inference rhythm | More than 3 bursts, mean inter-burst gap above 800ms, gap variance below 50000ms squared |
+
+**Severity:** always `high`.
+
+The inference rhythm condition is particularly useful for catching multi-step agent flows. The burst-pause-burst pattern emerges from the LLM's Act and Decide cycle: the model pauses between bursts of output to generate the next chunk. Regular inter-burst gaps, unlike the irregular pauses in a human session, produce low gap variance.
+
+The click precision condition targets Playwright's `element.click()`, which by default targets the exact center of the bounding box. Human clicks land with natural scatter due to hand movement and cursor positioning imprecision.
+
+---
+
+## isUploadAutomation
+
+Detects programmatic file attachment that bypasses the browser's file picker and drag-and-drop APIs.
+
+**Fires when:** files were attached to a file input (the `files` count on the element increased) with no preceding `change` event from the picker and no `drop` event. This is the signature of a script that directly sets `input.files` via a `DataTransfer` object.
+
+**Severity:** `high`.
+
+This rule has no minimum count threshold. Any programmatic file attachment without a picker or drop event is immediately flagged.
+
+---
+
+## Reading results
+
+The `detections` object in `BehaviorPayload` contains one `DetectionResult` per rule:
+
+```ts
+const { detections } = payload
+
+if (detections.isHeadless.detected) {
+  console.log('severity:', detections.isHeadless.severity)
+  console.log('reasons:', detections.isHeadless.reasons)
+}
+```
+
+The `reasons` array contains strings like:
+
+```
+"navigator.webdriver is true"
+"keystroke dwell variance 0.21ms² (human baseline > 50ms²)"
+"first input 12ms after focus (humans need >80ms physiologically)"
+```
+
+These are useful for debugging your integration, for logging alongside the payload, and for building risk explanations in your fraud queue UI.
+
+The top-level `verdict` field on the payload gives a single derived classification from all detection results combined. See [Payload](/docs/payload) for how the verdict is computed.

@@ -1,0 +1,163 @@
+---
+title: Payload
+description: The BehaviorPayload structure that nyasa builds and sends to your endpoint.
+---
+
+# Payload
+
+`BehaviorPayload` is the complete output of `buildPayload()`. When you use `collect()`, this object is serialized to JSON and sent to your endpoint via `navigator.sendBeacon` on form submit or tab close.
+
+## Shape
+
+```ts
+interface BehaviorPayload {
+  sessionId: string      // the value you passed to collect() or buildPayload()
+  collectedAt: string    // ISO 8601 timestamp of when the payload was built
+  signals: CollectedSignals
+  detections: Detections
+  verdict: Verdict
+}
+```
+
+### signals
+
+The raw collected data across all three pillars. This is the full evidence record for the session.
+
+```ts
+interface CollectedSignals {
+  behavioral: BehavioralSignals  // keystroke, mouse, touch, paste, scroll, and more
+  fingerprint: FingerprintSignals // webdriver markers, WebGL, canvas, audio, device id
+  network: NetworkSignals         // reaction time, connection info, page timing
+}
+```
+
+For every field in each signal shape, see [Signals](/docs/signals).
+
+### detections
+
+One `DetectionResult` per rule. `detected` tells you whether the rule fired. `severity` tells you the confidence level. `reasons` gives you the specific evidence with measured values.
+
+```ts
+interface Detections {
+  isHeadless: DetectionResult
+  isScripted: DetectionResult
+  isLLMAgent: DetectionResult
+  isAuthorizedAgent: DetectionResult
+  isUploadAutomation: DetectionResult
+  isMultimodalBot: DetectionResult
+}
+
+interface DetectionResult {
+  detected: boolean
+  severity: 'high' | 'medium' | 'low'
+  reasons: string[]
+}
+```
+
+For the exact thresholds and conditions behind each rule, see [Detections](/docs/detections).
+
+### verdict
+
+A client-side classification derived from the detection results. This is useful for immediate frontend feedback (showing a CAPTCHA, blocking a step, logging) but it is not the authoritative verdict. The Zoven scoring API enriches this with cross-customer graph signals and ML scoring.
+
+```ts
+interface Verdict {
+  kind: 'Human' | 'AuthorizedAgent' | 'UnauthorizedBot' | 'Analyzing'
+  confidence: number  // 0.0 to 1.0
+  badges: string[]    // labels for detected signals, e.g. ["CDP-Markers (high)"]
+}
+```
+
+`Analyzing` appears when `buildPayload()` is called before any input has been collected. `confidence` is a rough indicator derived from detection severity, not a calibrated probability.
+
+---
+
+## Example payload
+
+A clean human session looks like this:
+
+```json
+{
+  "sessionId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "collectedAt": "2026-05-03T10:00:00.000Z",
+  "signals": {
+    "behavioral": {
+      "keystroke": {
+        "dwells": [82, 95, 71, 110, 88],
+        "flights": [120, 88, 143, 97, 165]
+      },
+      "paste": { "pasteRatio": 0.0, "pasteCount": 0, "charCount": 18 },
+      "mouse": { "pathLength": 42, "curvature": [0.08, 0.14, 0.03, 0.21], "stillnessRatio": 0.12 },
+      "scroll": { "depths": [0, 120, 240], "timestamps": [1800, 2400, 3100] }
+    },
+    "fingerprint": {
+      "webdriver": { "webdriver": false, "cdpPresent": false, "playwrightPresent": false },
+      "webgl": { "vendor": "Apple", "renderer": "Apple M3 Pro", "supported": true },
+      "device": { "deviceId": "f3a92b1c-...", "isNew": false }
+    },
+    "network": {
+      "reaction": {
+        "firstInputDelay": 312,
+        "minInputDelay": 312,
+        "engagementDelayMs": 1840
+      },
+      "connection": { "effectiveType": "4g", "rtt": 50, "downlink": 10, "saveData": false, "supported": true }
+    }
+  },
+  "detections": {
+    "isHeadless":         { "detected": false, "severity": "low", "reasons": [] },
+    "isScripted":         { "detected": false, "severity": "low", "reasons": [] },
+    "isLLMAgent":         { "detected": false, "severity": "low", "reasons": [] },
+    "isAuthorizedAgent":  { "detected": false, "severity": "low", "reasons": [] },
+    "isUploadAutomation": { "detected": false, "severity": "low", "reasons": [] },
+    "isMultimodalBot":    { "detected": false, "severity": "low", "reasons": [] }
+  },
+  "verdict": {
+    "kind": "Human",
+    "confidence": 1.0,
+    "badges": []
+  }
+}
+```
+
+A scripted bot session would show uniform keystroke timing, zero mouse and touch activity, sub-50ms reaction times, and `isScripted.detected: true` with a `reasons` array describing exactly which thresholds were crossed.
+
+---
+
+## Sending the payload
+
+`collect()` sends the payload automatically via `sendBeacon`. If you are using `BehaviorScanner` directly, send it yourself:
+
+```ts
+const payload = scanner.buildPayload(sessionId)
+
+// Non-blocking, survives page unload. Preferred for form submit and tab-close scenarios.
+navigator.sendBeacon(endpoint, JSON.stringify(payload))
+
+// Fetch-based, for when you need a response before continuing:
+const response = await fetch(endpoint, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify(payload),
+})
+```
+
+Prefer `sendBeacon` for form submit and tab-close scenarios. It is fire-and-forget, non-blocking, and the browser guarantees delivery even as the page unloads. Use `fetch` only when you need a response from your endpoint before the user continues.
+
+## Session ID
+
+The `sessionId` in the payload is whatever you passed to `collect()` or `buildPayload()`. It is your responsibility to generate a unique ID per session and to pass the same ID to the Zoven scoring API so the payload and the score can be correlated.
+
+```ts
+// Generate once per session, before calling collect():
+const sessionId = crypto.randomUUID()
+
+// Pass to collect:
+collect('#form', { endpoint: '/api/score', sessionId })
+
+// Pass to your own API if you need to reference the session:
+await fetch('/api/submit', {
+  method: 'POST',
+  body: JSON.stringify({ sessionId, ...formData }),
+})
+```
