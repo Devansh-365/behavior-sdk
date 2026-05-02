@@ -1,15 +1,17 @@
 ---
 title: Introduction
-description: nyasa is a browser SDK that classifies every session as human, authorized agent, or unauthorized bot before the form submits.
+description: nyasa is a browser SDK that classifies every session as human, authorized agent, or unauthorized bot in real time.
 ---
 
 # nyasa
 
-`@devanshhq/nyasa` is a browser-side SDK that embeds into any web form and analyzes session behavior in real time. By the time a user hits submit, the SDK has already built a scored payload that tells your backend who filled the form.
+`@devanshhq/nyasa` is a browser-side SDK that embeds into any page or interactive flow and analyzes session behavior in real time. By the time you decide to score a session, the SDK has already built a payload that tells your backend who or what is behind the interaction.
+
+It works wherever users interact with your product: sign-up flows, login pages, KYC wizards, checkout steps, search interfaces, document upload screens, or any other surface where you need to know whether the actor is a human, an authorized agent, or an unauthorized bot.
 
 ## Why this exists
 
-Bots and LLM agents have caught up with humans at the surface layer. A scripted bot can type, click, and paste. An LLM agent fills forms faster than most people but otherwise looks unremarkable. Traditional CAPTCHA and rate limiting catch neither reliably.
+Bots and LLM agents have caught up with humans at the surface layer. A scripted bot can type, click, and paste. An LLM agent fills inputs faster than most people but otherwise looks unremarkable. Traditional CAPTCHA and rate limiting catch neither reliably.
 
 nyasa works at a different layer. It captures timing, movement, and environment signals that are much harder to fake consistently: the micro-variance in how long someone holds a key, whether the cursor follows a path that reflects human neuromuscular noise, whether the browser environment matches what a real device reports.
 
@@ -25,10 +27,10 @@ nyasa classifies every session into one of three categories:
 
 ## What the SDK does
 
-- Attaches 12 behavioral collectors to a form element: keystroke, mouse, touch, paste, scroll, corrections, click precision, session rhythm, field timing, input origin, file upload, and tab visibility.
+- Attaches 12 behavioral collectors to your container element and the page: keystroke, mouse, touch, paste, scroll, corrections, click precision, session rhythm, field timing, input origin, file upload, and tab visibility.
 - Runs 8 browser environment checks: webdriver markers, WebGL renderer, canvas fingerprint, audio fingerprint, iframe consistency, incognito mode, timezone/locale consistency, and device persistence.
 - Captures 3 network signals: focus-to-input reaction time, connection type, and page load timing.
-- Runs detection rules client-side when the form submits.
+- Runs detection rules client-side whenever you call `flush()` or when an underlying `<form>` submits.
 - Sends the `BehaviorPayload` to your endpoint via `navigator.sendBeacon`, which is non-blocking and survives page unload.
 
 ## What the SDK does not do

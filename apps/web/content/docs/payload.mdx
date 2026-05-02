@@ -5,7 +5,7 @@ description: The BehaviorPayload structure that nyasa builds and sends to your e
 
 # Payload
 
-`BehaviorPayload` is the complete output of `buildPayload()`. When you use `collect()`, this object is serialized to JSON and sent to your endpoint via `navigator.sendBeacon` on form submit or tab close.
+`BehaviorPayload` is the complete output of `buildPayload()`. When you use `collect()`, this object is serialized to JSON and sent to your endpoint via `navigator.sendBeacon` at your flush point (button click, step completion, or tab close).
 
 ## Shape
 
@@ -131,7 +131,7 @@ A scripted bot session would show uniform keystroke timing, zero mouse and touch
 ```ts
 const payload = scanner.buildPayload(sessionId)
 
-// Non-blocking, survives page unload. Preferred for form submit and tab-close scenarios.
+// Non-blocking, survives page unload. Preferred for session-end and tab-close scenarios.
 navigator.sendBeacon(endpoint, JSON.stringify(payload))
 
 // Fetch-based, for when you need a response before continuing:
@@ -142,7 +142,7 @@ const response = await fetch(endpoint, {
 })
 ```
 
-Prefer `sendBeacon` for form submit and tab-close scenarios. It is fire-and-forget, non-blocking, and the browser guarantees delivery even as the page unloads. Use `fetch` only when you need a response from your endpoint before the user continues.
+Prefer `sendBeacon` for session-end and tab-close scenarios. It is fire-and-forget, non-blocking, and the browser guarantees delivery even as the page unloads. Use `fetch` only when you need a response from your endpoint before the user continues.
 
 ## Session ID
 
@@ -153,7 +153,7 @@ The `sessionId` in the payload is whatever you passed to `collect()` or `buildPa
 const sessionId = crypto.randomUUID()
 
 // Pass to collect:
-collect('#form', { endpoint: '/api/score', sessionId })
+collect('#app-container', { endpoint: '/api/score', sessionId })
 
 // Pass to your own API if you need to reference the session:
 await fetch('/api/submit', {

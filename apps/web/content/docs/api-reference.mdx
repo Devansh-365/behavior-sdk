@@ -7,7 +7,7 @@ description: Full reference for the collect() function, BehaviorScanner class, a
 
 ## collect()
 
-The primary entry point. Attaches all collectors to a form, wires up automatic flush triggers, and returns a handle for manual control.
+The primary entry point. Attaches all collectors to a container element, wires up automatic flush triggers, and returns a handle for manual control.
 
 ```ts
 function collect(
@@ -20,7 +20,9 @@ function collect(
 
 **`selectorOrEl`**
 
-A CSS selector string passed to `document.querySelector`, or a direct `HTMLElement` reference. Throws if the selector matches nothing.
+A CSS selector string passed to `document.querySelector`, or a direct `HTMLElement` reference. Can be any element: a `<form>`, a `<div>`, a `<section>`, or `document.body`. Throws if the selector matches nothing.
+
+Collectors that scope to this element (keystroke, paste, corrections, field timing, reaction time) will listen within it. Collectors for mouse, scroll, click, session rhythm, and visibility always operate at the document or window level regardless of what element you pass.
 
 **`options`**
 
@@ -31,7 +33,7 @@ interface CollectOptions {
 }
 ```
 
-Use `crypto.randomUUID()` to generate a session ID. The session ID is included in the payload and ties it to the session in the Zoven scoring API.
+Use `crypto.randomUUID()` to generate a session ID. It is included in the payload and ties it to the session in the Zoven scoring API.
 
 ### Return value
 
@@ -46,10 +48,12 @@ interface CollectHandle {
 
 `collect` registers two flush triggers automatically:
 
-1. A `submit` listener on the form that contains the target element (or the element itself if it is a `<form>`).
+1. A `submit` listener on the nearest `<form>` ancestor of the target element, if one exists.
 2. A `visibilitychange` listener that flushes when `document.visibilityState === 'hidden'`.
 
 Both use `{ once: true }`. If you call `flush()` or `stop()` manually before either trigger fires, the automatic triggers become no-ops.
+
+If your surface has no `<form>` element, the tab-close trigger still fires. Call `flush()` manually at your chosen score point (button click, step completion, route change) to ensure the payload is sent at the right moment.
 
 ---
 
@@ -59,26 +63,30 @@ Lower-level class for advanced use cases: building payloads on demand, wiring up
 
 ```ts
 class BehaviorScanner {
-  attach(formEl: HTMLElement): this
+  attach(el: HTMLElement): this
   buildPayload(sessionId: string): BehaviorPayload
   detach(): void
 }
 ```
 
-### attach(formEl)
+### attach(el)
 
 Attaches 13 stateful collectors to the target element and document (12 behavioral and 1 network reaction collector). Also starts async prewarming for the audio fingerprint and incognito detection, so those results are ready by the time `buildPayload()` is called.
 
-Returns `this` for chaining. Signals only accumulate while attached, so call this as early as possible.
+Returns `this` for chaining. Signals only accumulate while attached, so call this as early as possible in the session.
 
 ```ts
 const scanner = new BehaviorScanner()
-scanner.attach(document.querySelector('#form')!)
+
+// Works with any element:
+scanner.attach(document.querySelector('#wizard-step-1')!)
+scanner.attach(document.querySelector('#login-container')!)
+scanner.attach(document.body)
 ```
 
 ### buildPayload(sessionId)
 
-Collects all signals, runs all detection rules, derives a client-side verdict, and returns a complete `BehaviorPayload`. Safe to call repeatedly. Collectors stay attached between calls, so you can poll for a live payload.
+Collects all signals, runs all detection rules, derives a client-side verdict, and returns a complete `BehaviorPayload`. Safe to call repeatedly. Collectors stay attached between calls, so you can poll for a live payload during the session.
 
 ```ts
 const payload = scanner.buildPayload(sessionId)

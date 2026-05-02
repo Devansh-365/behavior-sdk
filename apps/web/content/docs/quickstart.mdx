@@ -1,6 +1,6 @@
 ---
 title: Quickstart
-description: Add nyasa to any web form in under 5 minutes.
+description: Add nyasa to any page or interactive flow in under 5 minutes.
 ---
 
 # Quickstart
@@ -13,23 +13,25 @@ npm install @devanshhq/nyasa
 
 ## ESM (bundler)
 
-The most common integration path. Import `collect`, call it once when the page loads, and nyasa handles the rest.
+The most common integration path. Pass any container element or CSS selector, and nyasa starts collecting immediately.
 
 ```ts
 import { collect } from '@devanshhq/nyasa'
 
-const handle = collect('#signup-form', {
+const handle = collect('#signup-container', {
   endpoint: 'https://your-api.example.com/score',
   sessionId: crypto.randomUUID(),
 })
 ```
 
-`collect` returns immediately. It attaches signal collectors to the form and sets up two automatic flush triggers:
+`collect` accepts any `HTMLElement`: a `<form>`, a `<div>` wrapping a multi-step wizard, a `<section>` containing a login flow, or the `document.body` itself. Behavioral collectors that scope to the container (keystroke, paste, corrections, field timing) will listen within that element. Mouse, scroll, click, and session rhythm collectors always operate at the document level regardless of what element you pass.
 
-- **Form submit**: the SDK builds the payload and sends it before the form navigates away.
-- **Tab close or backgrounding**: the SDK catches the `visibilitychange` event and flushes then too, so you get data even when users abandon the form mid-way.
+`collect` sets up two automatic flush triggers:
 
-You do not need to call anything else for a standard form.
+- **Form submit**: if the container element is or contains a `<form>`, the SDK flushes when that form submits.
+- **Tab close or backgrounding**: the SDK catches the `visibilitychange` event and flushes then too, so you get data even when users leave mid-session.
+
+For flows without a form submit (multi-step wizards, login buttons, custom flows), use `flush()` directly.
 
 ## Script tag (IIFE)
 
@@ -38,7 +40,7 @@ If you are not using a bundler, load the prebuilt global bundle instead.
 ```html
 <script src="https://cdn.example.com/@devanshhq/nyasa/index.global.js"></script>
 <script>
-  BehaviorSDK.collect('#signup-form', {
+  BehaviorSDK.collect('#app-container', {
     endpoint: 'https://your-api.example.com/score',
     sessionId: crypto.randomUUID(),
   })
@@ -47,26 +49,26 @@ If you are not using a bundler, load the prebuilt global bundle instead.
 
 The global name is `BehaviorSDK`. Everything else behaves identically to the ESM build.
 
-## SPAs and manual control
+## Manual flush (SPAs and custom flows)
 
-In a single-page app, the form may not submit in the traditional sense. Use `flush()` to send the payload at the right moment, and `stop()` to clean up without sending.
+When there is no traditional form submit, call `flush()` at the moment you want to score the session: after a button click, at the end of a wizard step, or before a route change.
 
 ```ts
 import { collect } from '@devanshhq/nyasa'
 
-const handle = collect('#checkout-form', {
+const handle = collect('#checkout-container', {
   endpoint: '/api/score',
   sessionId: crypto.randomUUID(),
 })
 
-// On your custom submit handler:
-async function onSubmit() {
+// Score at your chosen moment:
+async function onContinue() {
   handle.flush()       // sends payload via sendBeacon, detaches collectors
-  await submitToApi()
+  await nextStep()
 }
 
-// On unmount or route change without a submit:
-function onUnmount() {
+// Clean up without scoring (e.g. user navigated away):
+function onExit() {
   handle.stop()        // detaches collectors, does NOT send
 }
 ```
@@ -75,21 +77,21 @@ Both `flush()` and `stop()` are idempotent. Calling either more than once does n
 
 ## React hook pattern
 
-For React apps, use `BehaviorScanner` directly to keep control inside a hook.
+Use `BehaviorScanner` directly when you need control inside a component lifecycle. The container element can be any element in your tree.
 
 ```ts
 import { useEffect, useRef } from 'react'
 import { BehaviorScanner } from '@devanshhq/nyasa'
 
 function useNyasa(sessionId: string) {
-  const formRef = useRef<HTMLFormElement>(null)
+  const containerRef = useRef<HTMLElement>(null)
   const scannerRef = useRef<BehaviorScanner | null>(null)
 
   useEffect(() => {
-    const form = formRef.current
-    if (!form) return
+    const el = containerRef.current
+    if (!el) return
 
-    const scanner = new BehaviorScanner().attach(form)
+    const scanner = new BehaviorScanner().attach(el)
     scannerRef.current = scanner
 
     return () => scanner.detach()
@@ -99,15 +101,15 @@ function useNyasa(sessionId: string) {
     return scannerRef.current?.buildPayload(sessionId) ?? null
   }
 
-  return { formRef, getPayload }
+  return { containerRef, getPayload }
 }
 ```
 
 ## Verifying the integration
 
-Open your browser's Network tab and filter for requests to your endpoint. After submitting the form, you should see a `sendBeacon` POST with a JSON body. The payload will contain a `detections` object and a `verdict` field.
+Open your browser's Network tab and filter for requests to your endpoint. After your flush point (form submit, button click, or tab close), you should see a `sendBeacon` POST with a JSON body. The payload will contain a `detections` object and a `verdict` field.
 
-`sendBeacon` requests appear under the "Ping" type in Chrome DevTools. If you do not see it, try filtering by your endpoint URL directly.
+`sendBeacon` requests appear under the "Ping" type in Chrome DevTools. If you do not see it, filter by your endpoint URL directly.
 
 ## What to do with the payload
 

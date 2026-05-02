@@ -1,6 +1,6 @@
 ---
 title: Signals
-description: The three signal pillars collected by nyasa: behavioral, fingerprint, and network.
+description: "The three signal pillars collected by nyasa: behavioral, fingerprint, and network."
 ---
 
 # Signals
@@ -17,7 +17,7 @@ nyasa organizes collected data into three pillars. Each one covers a different c
 
 ## Behavioral
 
-Behavioral signals come from event listeners attached to the form element and document. They accumulate in real time as the user interacts. These are the richest signals for distinguishing humans from automation because they reflect physical and cognitive constraints that are hard to replicate programmatically without leaving traces.
+Behavioral signals come from event listeners attached to the container element and document. They accumulate in real time as the user interacts. These are the richest signals for distinguishing humans from automation because they reflect physical and cognitive constraints that are hard to replicate programmatically without leaving traces.
 
 ### Keystroke
 
@@ -68,7 +68,7 @@ interface CorrectionSignals {
 }
 ```
 
-Humans make typos and fix them. Long input with a correction ratio of zero is a reliable signal that the form was filled by automation. A bot that deliberately inserts random backspaces to mimic this behavior will produce a different statistical pattern than organic correction.
+Humans make typos and fix them. Long input with a correction ratio of zero is a reliable signal that the interaction was driven by automation. A bot that deliberately inserts random backspaces to mimic this behavior will produce a different statistical pattern than organic correction.
 
 ### Paste
 
@@ -80,7 +80,7 @@ interface PasteSignals {
 }
 ```
 
-LLM agents typically compose their response in the model's context then paste it into form fields in one or a few large chunks. A high paste ratio across all fields, combined with no scroll events and fast completion, is a strong LLM indicator.
+LLM agents typically compose their response in the model's context then paste it into inputs in one or a few large chunks. A high paste ratio across all inputs, combined with no scroll events and fast completion, is a strong LLM indicator.
 
 ### Scroll
 
@@ -91,7 +91,7 @@ interface ScrollSignals {
 }
 ```
 
-Humans almost always scroll while reading or filling out a longer form. Agents that batch-fill fields programmatically rarely scroll at all. Zero scroll events alongside substantial character input is one of the signals used in LLM detection.
+Humans almost always scroll while reading or navigating a longer page or flow. Agents that batch-fill inputs programmatically rarely scroll at all. Zero scroll events alongside substantial character input is one of the signals used in LLM detection.
 
 ### Input origin
 
@@ -105,7 +105,7 @@ interface InputTypeSignals {
 }
 ```
 
-Every `InputEvent` fired by a real keyboard or clipboard interaction carries an `inputType` string. When a script dispatches a bare `InputEvent` without an `inputType`, it appears as programmatic here. A high programmatic count alongside zero typed, pasted, or dropped events means the form was filled by code that bypassed the browser's input APIs entirely.
+Every `InputEvent` fired by a real keyboard or clipboard interaction carries an `inputType` string. When a script dispatches a bare `InputEvent` without an `inputType`, it appears as programmatic here. A high programmatic count alongside zero typed, pasted, or dropped events means the page was driven by code that bypassed the browser's input APIs entirely.
 
 ### Upload
 
@@ -114,7 +114,7 @@ interface UploadSignals {
   pickerCount: number        // change events on file inputs (user opened the picker)
   dragDropCount: number      // drop events with files
   programmaticCount: number  // file count grew without a picker or drop event
-  filesAttached: number      // total files currently attached to the form
+  filesAttached: number      // total files currently attached across all file inputs
   exifResults: ExifSignals[] // metadata analysis for each file from the picker
 }
 
@@ -139,7 +139,7 @@ interface VisibilitySignals {
 }
 ```
 
-Tab switching and window focus loss during form filling are normal human behaviors. Agents typically produce neither.
+Tab switching and window focus loss during an interaction are normal human behaviors. Agents typically produce neither.
 
 ### Click precision
 
@@ -177,7 +177,7 @@ interface FieldTimingSignals {
 }
 ```
 
-An agent that batch-fills a form by setting field values programmatically will produce multiple instant fill events across distinct fields. Two or more instant fills across at least two fields is a reliable LLM-act pattern.
+An agent that batch-fills inputs by setting values programmatically will produce multiple instant fill events across distinct fields. Two or more instant fills across at least two fields is a reliable LLM-act pattern.
 
 ---
 
