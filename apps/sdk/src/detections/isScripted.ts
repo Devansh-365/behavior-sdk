@@ -54,6 +54,16 @@ export function detectScripted(signals: CollectedSignals): DetectionResult {
   if (minInputDelay !== null && minInputDelay < 50)
     reasons.push(`first input ${minInputDelay.toFixed(0)}ms after focus (humans need >80ms physiologically)`)
 
+  // ── Programmatic input dispatch ──────────────────────────────────────────
+  // Real input always carries an inputType ("insertText", "insertFromPaste", …).
+  // An InputEvent dispatched by a script has no inputType (empty string).
+  // If we see programmatic events but zero events with a known origin, the
+  // form was filled by code that bypasses keyboard and clipboard APIs entirely.
+  const it = behavioral.inputType
+  const hasKnownOrigin = it.typed + it.pasted + it.dropped > 0
+  if (it.programmatic > 5 && !hasKnownOrigin)
+    reasons.push(`${it.programmatic} programmatic input events with no typed/pasted/dropped origin`)
+
   return {
     detected: reasons.length >= 2,
     severity: reasons.length >= 3 ? 'high' : 'medium',

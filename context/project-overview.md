@@ -2,7 +2,11 @@
 
 ## What this system does
 
-A browser-side SDK that embeds into any web form, captures behavioral and fingerprint signals during a session, runs detection rules client-side, and sends a scored payload to the Zoven scoring API. The API classifies the session as **human**, **authorized AI agent**, or **unauthorized bot**, and delivers a risk score + alert into the customer's fraud queue.
+A browser-side SDK that embeds into any web form, captures behavioral and fingerprint signals during a session, runs detection rules client-side, and sends a scored payload to the Zoven scoring API. The API classifies the session as **human**, **authorized AI agent**, or **unauthorized bot**, and delivers a risk score into the customer's fraud queue.
+
+## Current focus: identity, not intent
+
+The SDK answers **who and what** — is this a human, a scripted bot, an LLM agent, or a headless browser? It does not currently evaluate **why** (what is the actor trying to do, is the action fraudulent given context). Intent analysis is a future server-side concern once identity classification is solid. All signal and detection work is scoped to identity.
 
 ## Goals
 
@@ -17,10 +21,13 @@ A browser-side SDK that embeds into any web form, captures behavioral and finger
 ```
 Customer's page
   └── collect('#form', { endpoint, sessionId })
-        ├── attaches behavioral collectors (keystroke, mouse, paste, scroll)
+        ├── attaches behavioral collectors (8: keystroke, mouse, touch, correction,
+        │   paste, scroll, input-type, upload)
+        ├── prewarms fingerprint collectors (5: webdriver, iframe, canvas, webgl, audio)
+        ├── attaches network collectors (3: reaction, connection, timing)
         ├── on submit / tab-close → flush()
-        │     ├── collects fingerprint signals (webdriver, iframe, canvas)
-        │     ├── runs detection rules (isHeadless, isScripted, isLLMAgent)
+        │     ├── collects all signals
+        │     ├── runs detection rules (isHeadless, isScripted, isLLMAgent, isUploadAutomation)
         │     └── sendBeacon(endpoint, JSON.stringify(payload))
         └── scoring API returns { actor_type, risk_score } → customer's fraud queue
 ```
@@ -28,13 +35,15 @@ Customer's page
 ## Scope
 
 **In scope (this repo):**
-- Browser signal collection SDK (`src/`)
-- ESM + IIFE build output (`dist/`)
+- Browser signal collection SDK (`apps/sdk/src/`)
+- ESM + IIFE build output (`apps/sdk/dist/`)
 - Client-side detection rules (pre-scoring signal analysis)
+- Demo app (`apps/demo/`) — live integration showcase with synthetic scenarios
 
 **Out of scope:**
 - Scoring API / ML classifier (closed, separate service)
 - Cross-customer risk graph (closed)
+- Intent analysis / behavioral fraud patterns (future server-side layer)
 - Mobile native SDK
 - Agent-trust verification (`zoven-agent` — separate package)
 - Dashboard UI
@@ -46,4 +55,4 @@ Customer's page
 | `npm run typecheck` | Zero errors, `strict: true` |
 | `npm run build` | Completes in < 5s, produces ESM + IIFE + `.d.ts` |
 | SDK main-thread impact | < 5ms per collection cycle |
-| Bundle size | < 15KB unminified (currently 11.7KB ESM) |
+| Bundle size | < 15KB unminified ESM |

@@ -26,9 +26,22 @@ export function attachMouseCollector(target: Document | HTMLElement): Collector<
     getSignals: (): MouseSignals => ({
       pathLength: path.length,
       curvature: computeCurvature(path),
+      stillnessRatio: computeStillness(path),
     }),
     detach: (): void => target.removeEventListener('mousemove', onMouseMove),
   }
+}
+
+function computeStillness(path: [number, number][]): number {
+  if (path.length < 2) return 1 // no samples = assume still
+  let stillCount = 0
+  for (let i = 1; i < path.length; i++) {
+    const prev = path[i - 1]
+    const curr = path[i]
+    if (!prev || !curr) continue
+    if (Math.abs(curr[0] - prev[0]) + Math.abs(curr[1] - prev[1]) < 2) stillCount++
+  }
+  return stillCount / (path.length - 1)
 }
 
 function computeCurvature(path: [number, number][]): number[] {

@@ -43,6 +43,11 @@ export function SignalsCard({ signals }: SignalsCardProps): JSX.Element {
   const cx = signals?.correction
   const p = signals?.paste
   const s = signals?.scroll
+  const it = signals?.inputType
+  const up = signals?.upload
+  const vis = signals?.visibility
+  const cl = signals?.click
+  const rhy = signals?.sessionRhythm
   const dwellAvg = k ? mean(k.dwells) : 0
   const dwellVar = k ? variance(k.dwells) : 0
   const flightVar = k ? variance(k.flights) : 0
@@ -76,8 +81,13 @@ export function SignalsCard({ signals }: SignalsCardProps): JSX.Element {
             value={fmtNum(curvVar, 3)}
             highlight={(m?.curvature.length ?? 0) >= 5 && curvVar > 0 && curvVar < 0.05}
           />
+          <Metric
+            label="Stillness ratio"
+            value={fmtNum((m?.stillnessRatio ?? 0) * 100, 0)}
+            trail="%"
+            highlight={(m?.pathLength ?? 0) > 5 && (m?.stillnessRatio ?? 0) > 0.7}
+          />
           <Metric label="Touch starts" value={String(t?.touchCount ?? 0)} />
-          <Metric label="Touch moves" value={String(t?.pathLength ?? 0)} />
         </Section>
 
         <Section title="Paste">
@@ -99,6 +109,69 @@ export function SignalsCard({ signals }: SignalsCardProps): JSX.Element {
           />
           <Metric label="Scroll events" value={String(s?.depths.length ?? 0)} />
           <Metric label="Last scroll Y" value={`${lastScroll}px`} />
+        </Section>
+
+        <Section title="Input origin">
+          <Metric label="Typed" value={String(it?.typed ?? 0)} />
+          <Metric label="Pasted" value={String(it?.pasted ?? 0)} />
+          <Metric label="Deleted" value={String(it?.deleted ?? 0)} />
+          <Metric
+            label="Programmatic"
+            value={String(it?.programmatic ?? 0)}
+            highlight={(it?.programmatic ?? 0) > 5 && (it?.typed ?? 0) + (it?.pasted ?? 0) + (it?.dropped ?? 0) === 0}
+          />
+        </Section>
+
+        <Section title="Tab visibility">
+          <Metric label="Hidden count" value={String(vis?.hiddenCount ?? 0)} />
+          <Metric label="Window blurs" value={String(vis?.blurCount ?? 0)} />
+          <Metric label="Total hidden" value={fmtNum((vis?.totalHiddenMs ?? 0) / 1000, 1)} trail="s" />
+        </Section>
+
+        <Section title="Click precision">
+          <Metric label="Click count" value={String(cl?.count ?? 0)} />
+          <Metric label="On interactive" value={String(cl?.targeted ?? 0)} />
+          <Metric
+            label="Mean offset"
+            value={
+              (cl?.centerOffsets.length ?? 0) >= 3
+                ? fmtNum(
+                    (cl?.centerOffsets ?? []).reduce((s, [dx, dy]) => s + Math.sqrt(dx * dx + dy * dy), 0) /
+                      (cl?.centerOffsets.length ?? 1),
+                    1,
+                  )
+                : '—'
+            }
+            trail={(cl?.centerOffsets.length ?? 0) >= 3 ? 'px' : undefined}
+            highlight={
+              (cl?.targeted ?? 0) >= 3 &&
+              (cl?.centerOffsets.length ?? 0) >= 3 &&
+              (cl?.centerOffsets ?? []).reduce((s, [dx, dy]) => s + Math.sqrt(dx * dx + dy * dy), 0) /
+                (cl?.centerOffsets.length ?? 1) < 3
+            }
+          />
+        </Section>
+
+        <Section title="Session rhythm">
+          <Metric label="Event gaps" value={String(rhy?.eventGaps.length ?? 0)} />
+          <Metric label="Burst count" value={String(rhy?.burstCount ?? 0)} />
+          <Metric label="Mean gap" value={fmtNum(rhy?.meanBurstGapMs ?? 0, 0)} trail="ms"
+            highlight={(rhy?.burstCount ?? 0) > 3 && (rhy?.meanBurstGapMs ?? 0) > 800}
+          />
+          <Metric label="Gap variance" value={fmtNum(rhy?.gapVariance ?? 0, 0)}
+            highlight={(rhy?.burstCount ?? 0) > 3 && (rhy?.gapVariance ?? 0) < 50000 && (rhy?.meanBurstGapMs ?? 0) > 800}
+          />
+        </Section>
+
+        <Section title="File upload">
+          <Metric label="Via picker" value={String(up?.pickerCount ?? 0)} />
+          <Metric label="Via drag-drop" value={String(up?.dragDropCount ?? 0)} />
+          <Metric
+            label="Programmatic"
+            value={String(up?.programmaticCount ?? 0)}
+            highlight={(up?.programmaticCount ?? 0) > 0}
+          />
+          <Metric label="Files attached" value={String(up?.filesAttached ?? 0)} />
         </Section>
       </div>
     </section>

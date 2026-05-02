@@ -8,8 +8,9 @@ export interface KeystrokeSignals {
 }
 
 export interface MouseSignals {
-  pathLength: number  // total points recorded (capped, see mouse.ts)
-  curvature: number[] // angular deltas along path (radians)
+  pathLength: number      // total points recorded (capped, see mouse.ts)
+  curvature: number[]     // angular deltas along path (radians)
+  stillnessRatio: number  // fraction of consecutive samples with < 2px movement (0 = always moving, 1 = fully still)
 }
 
 export interface TouchSignals {
@@ -71,8 +72,9 @@ export interface AudioSignals {
 // ---------------------------------------------------------------------------
 
 export interface ReactionSignals {
-  firstInputDelay: number | null  // ms from first focus → first input; null if no input yet
-  minInputDelay: number | null    // smallest focus→input delay observed; null if none
+  firstInputDelay: number | null    // ms from first focus → first input; null if no input yet
+  minInputDelay: number | null      // smallest focus→input delay observed; null if none
+  engagementDelayMs: number | null  // ms from attach() → first focusin; null if user never focused
 }
 
 export interface ConnectionSignals {
@@ -96,6 +98,41 @@ export interface TimingSignals {
 // Composite containers
 // ---------------------------------------------------------------------------
 
+export interface InputTypeSignals {
+  typed: number        // insertText / insertReplacementText
+  pasted: number       // insertFromPaste
+  dropped: number      // insertFromDrop
+  deleted: number      // deleteContent*
+  programmatic: number // input event with empty/unknown inputType
+}
+
+export interface UploadSignals {
+  pickerCount: number       // change events on file inputs
+  dragDropCount: number     // drop events with files
+  programmaticCount: number // file count grew without picker or drop event
+  filesAttached: number     // total files currently in form file inputs
+}
+
+export interface SessionRhythmSignals {
+  eventGaps: number[]      // ms between any consecutive events (key, mouse, scroll, click, focus)
+  maxGapMs: number         // largest dead period — direct inference-pause proxy
+  burstCount: number       // distinct activity bursts separated by >800ms gaps
+  meanBurstGapMs: number   // mean silence between bursts (≈ LLM inference time)
+  gapVariance: number      // variance of inter-burst gaps: low = regular LLM rhythm, high = human irregular
+}
+
+export interface ClickSignals {
+  count: number
+  centerOffsets: Array<[number, number]>  // [dx, dy] px from clicked element's bounding box center
+  targeted: number                         // clicks on interactive elements (input, button, select, a)
+}
+
+export interface VisibilitySignals {
+  hiddenCount: number    // times document went to 'hidden' visibilityState
+  blurCount: number      // window blur events
+  totalHiddenMs: number  // cumulative ms the page was not visible
+}
+
 export interface BehavioralSignals {
   keystroke: KeystrokeSignals
   mouse: MouseSignals
@@ -103,6 +140,11 @@ export interface BehavioralSignals {
   correction: CorrectionSignals
   paste: PasteSignals
   scroll: ScrollSignals
+  inputType: InputTypeSignals
+  upload: UploadSignals
+  visibility: VisibilitySignals
+  click: ClickSignals
+  sessionRhythm: SessionRhythmSignals
 }
 
 export interface FingerprintSignals {
@@ -151,6 +193,7 @@ export interface Detections {
   isHeadless: DetectionResult
   isScripted: DetectionResult
   isLLMAgent: DetectionResult
+  isUploadAutomation: DetectionResult
 }
 
 // ---------------------------------------------------------------------------

@@ -14,15 +14,17 @@ export interface Verdict {
 }
 
 const RULE_LABEL: Record<keyof Detections, string> = {
-  isHeadless: 'Headless browser',
-  isScripted: 'Scripted bot',
-  isLLMAgent: 'LLM agent',
+  isHeadless:         'Headless browser',
+  isScripted:         'Scripted bot',
+  isLLMAgent:         'LLM agent',
+  isUploadAutomation: 'Upload automation',
 }
 
 const SUBKIND_FOR: Record<keyof Detections, Exclude<VerdictKind, 'analyzing' | 'human' | 'multiple'>> = {
-  isHeadless: 'headless',
-  isScripted: 'scripted',
-  isLLMAgent: 'llm',
+  isHeadless:         'headless',
+  isScripted:         'scripted',
+  isLLMAgent:         'llm',
+  isUploadAutomation: 'scripted',
 }
 
 const SHORT_LABEL: Record<VerdictKind, string> = {

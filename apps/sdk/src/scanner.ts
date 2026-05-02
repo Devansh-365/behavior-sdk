@@ -12,12 +12,17 @@
  * stateful and stateless collectors).
  */
 
-import { attachKeystrokeCollector }  from './signals/behavioral/keystroke'
-import { attachMouseCollector }      from './signals/behavioral/mouse'
-import { attachTouchCollector }      from './signals/behavioral/touch'
-import { attachCorrectionCollector } from './signals/behavioral/correction'
-import { attachPasteCollector }      from './signals/behavioral/paste'
-import { attachScrollCollector }     from './signals/behavioral/scroll'
+import { attachKeystrokeCollector }   from './signals/behavioral/keystroke'
+import { attachMouseCollector }       from './signals/behavioral/mouse'
+import { attachTouchCollector }       from './signals/behavioral/touch'
+import { attachCorrectionCollector }  from './signals/behavioral/correction'
+import { attachPasteCollector }       from './signals/behavioral/paste'
+import { attachScrollCollector }      from './signals/behavioral/scroll'
+import { attachInputTypeCollector }    from './signals/behavioral/input-type'
+import { attachUploadCollector }       from './signals/behavioral/upload'
+import { attachVisibilityCollector }   from './signals/behavioral/visibility'
+import { attachClickCollector }         from './signals/behavioral/click'
+import { attachSessionRhythmCollector } from './signals/behavioral/session-rhythm'
 
 import { collectWebdriverSignal }    from './signals/fingerprint/webdriver'
 import { collectIframeSignal }       from './signals/fingerprint/iframe'
@@ -36,6 +41,7 @@ import { collectTimingSignal }       from './signals/network/timing'
 import { detectHeadless }            from './detections/isHeadless'
 import { detectScripted }            from './detections/isScripted'
 import { detectLLMAgent }            from './detections/isLLMAgent'
+import { detectUploadAutomation }    from './detections/isUploadAutomation'
 
 import type {
   Collector,
@@ -45,6 +51,11 @@ import type {
   CorrectionSignals,
   PasteSignals,
   ScrollSignals,
+  InputTypeSignals,
+  UploadSignals,
+  VisibilitySignals,
+  ClickSignals,
+  SessionRhythmSignals,
   ReactionSignals,
   CollectedSignals,
   FingerprintSignals,
@@ -66,6 +77,11 @@ type AttachedCollectors = {
   correction: Collector<CorrectionSignals>
   paste: Collector<PasteSignals>
   scroll: Collector<ScrollSignals>
+  inputType: Collector<InputTypeSignals>
+  upload: Collector<UploadSignals>
+  visibility: Collector<VisibilitySignals>
+  click: Collector<ClickSignals>
+  sessionRhythm: Collector<SessionRhythmSignals>
   // network
   reaction: Collector<ReactionSignals>
 }
@@ -88,7 +104,12 @@ export class BehaviorScanner {
       correction: attachCorrectionCollector(formEl),
       paste:      attachPasteCollector(formEl),
       scroll:     attachScrollCollector(),
-      reaction:   attachReactionCollector(formEl),
+      inputType:  attachInputTypeCollector(formEl),
+      upload:     attachUploadCollector(formEl),
+      visibility: attachVisibilityCollector(),
+      click:         attachClickCollector(document),
+      sessionRhythm: attachSessionRhythmCollector(),
+      reaction:      attachReactionCollector(formEl, this.#startedAt),
     }
     // Kick off async fingerprints so they're ready by the time buildPayload() is called.
     prewarmAudioFingerprint()
@@ -115,6 +136,11 @@ export class BehaviorScanner {
     this.#collectors.correction.detach()
     this.#collectors.paste.detach()
     this.#collectors.scroll.detach()
+    this.#collectors.inputType.detach()
+    this.#collectors.upload.detach()
+    this.#collectors.visibility.detach()
+    this.#collectors.click.detach()
+    this.#collectors.sessionRhythm.detach()
     this.#collectors.reaction.detach()
     this.#collectors = null
     this.#fingerprintCache = null
@@ -135,6 +161,11 @@ export class BehaviorScanner {
         correction: c.correction.getSignals(),
         paste:      c.paste.getSignals(),
         scroll:     c.scroll.getSignals(),
+        inputType:  c.inputType.getSignals(),
+        upload:     c.upload.getSignals(),
+        visibility: c.visibility.getSignals(),
+        click:         c.click.getSignals(),
+        sessionRhythm: c.sessionRhythm.getSignals(),
       },
       fingerprint: this.#getFingerprint(),
       network: {
@@ -167,9 +198,10 @@ export class BehaviorScanner {
   #runDetections(signals: CollectedSignals): Detections {
     const sessionMeta = { elapsedMs: performance.now() - this.#startedAt }
     return {
-      isHeadless: detectHeadless(signals),
-      isScripted: detectScripted(signals),
-      isLLMAgent: detectLLMAgent(signals, sessionMeta),
+      isHeadless:         detectHeadless(signals),
+      isScripted:         detectScripted(signals),
+      isLLMAgent:         detectLLMAgent(signals, sessionMeta),
+      isUploadAutomation: detectUploadAutomation(signals),
     }
   }
 }

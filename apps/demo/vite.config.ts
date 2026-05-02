@@ -1,18 +1,18 @@
+/// <reference types="node" />
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 
-// Alias the SDK package to its source so Vite HMR fires on SDK source changes.
-// In production build (`vite build`), Vite still follows this alias and bundles
-// the SDK source — eliminating the dev/prod resolution divergence risk.
+// Default: alias to TS source so Vite HMR fires on SDK source changes (fast DX).
+// USE_SDK_PACKAGE=true: resolve via the workspace symlink → apps/sdk/dist/index.js,
+// testing real consumer experience. Run `npm run demo:package` from root to use this.
 const sdkSource = new URL('../sdk/src/index.ts', import.meta.url).pathname
+const usePackage = process.env['USE_SDK_PACKAGE'] === 'true'
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   resolve: {
-    alias: {
-      'behavior-sdk': sdkSource,
-    },
+    alias: usePackage ? {} : { 'behavior-sdk': sdkSource },
   },
   server: {
     open: true,

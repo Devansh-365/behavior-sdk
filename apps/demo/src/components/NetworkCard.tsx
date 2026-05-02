@@ -21,7 +21,9 @@ export function NetworkCard({ network }: NetworkCardProps): JSX.Element {
   const timing = network?.timing
   const fid = reaction?.firstInputDelay ?? null
   const min = reaction?.minInputDelay ?? null
+  const engagement = reaction?.engagementDelayMs ?? null
   const subhuman = min !== null && min < 50
+  const botEngagement = engagement !== null && engagement < 200
 
   return (
     <section className="rounded-xl border border-slate-800/80 bg-slate-900/40 p-5">
@@ -63,6 +65,13 @@ export function NetworkCard({ network }: NetworkCardProps): JSX.Element {
           {subhuman && (
             <span className="font-mono text-rose-400">{'< 50ms — non-human'}</span>
           )}
+        </div>
+        <div className={`mt-2 flex items-center justify-between rounded px-2 py-1 text-[11px] ${botEngagement ? 'bg-rose-500/10' : 'bg-slate-800/40'}`}>
+          <span className="text-slate-400">Engagement delay</span>
+          <span className={`font-mono ${botEngagement ? 'text-rose-400' : 'text-slate-300'}`}>
+            {engagement === null ? 'no focus yet' : `${engagement.toFixed(0)} ms`}
+            {botEngagement && ' — bot-speed'}
+          </span>
         </div>
       </div>
 

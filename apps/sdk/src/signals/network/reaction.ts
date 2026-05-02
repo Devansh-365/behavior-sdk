@@ -15,13 +15,20 @@ import type { Collector, ReactionSignals } from '../../types'
  *
  * Detection rules consume `minInputDelay` (strongest single signal).
  */
-export function attachReactionCollector(target: HTMLElement): Collector<ReactionSignals> {
+export function attachReactionCollector(
+  target: HTMLElement,
+  startedAt: number
+): Collector<ReactionSignals> {
   let lastFocusAt: number | null = null
   let firstInputDelay: number | null = null
   let minInputDelay: number | null = null
+  let engagementDelayMs: number | null = null
 
   function onFocusIn(): void {
-    lastFocusAt = performance.now()
+    const now = performance.now()
+    // Record time from attach() to first user focus — bots engage in <200ms, humans 2–15s
+    if (engagementDelayMs === null) engagementDelayMs = now - startedAt
+    lastFocusAt = now
   }
 
   function onInput(): void {
@@ -36,7 +43,7 @@ export function attachReactionCollector(target: HTMLElement): Collector<Reaction
   target.addEventListener('input', onInput)
 
   return {
-    getSignals: (): ReactionSignals => ({ firstInputDelay, minInputDelay }),
+    getSignals: (): ReactionSignals => ({ firstInputDelay, minInputDelay, engagementDelayMs }),
     detach: (): void => {
       target.removeEventListener('focusin', onFocusIn)
       target.removeEventListener('input', onInput)

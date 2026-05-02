@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Bot, Brain, Loader2, Play, User } from 'lucide-react'
+import { Bot, Brain, Loader2, Play, User, Ghost } from 'lucide-react'
 import { runScenario } from '../scenarios'
 
 interface ScenariosPanelProps {
@@ -31,6 +31,14 @@ const SCENARIOS = [
     icon: Brain,
     accent: 'hover:border-rose-500/40 hover:bg-rose-500/5',
     tag: 'text-rose-400',
+  },
+  {
+    id: 'stealth',
+    label: 'Stealth bot',
+    blurb: 'dispatchEvent + programmatic file attach',
+    icon: Ghost,
+    accent: 'hover:border-violet-500/40 hover:bg-violet-500/5',
+    tag: 'text-violet-400',
   },
 ] as const
 

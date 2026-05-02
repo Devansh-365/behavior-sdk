@@ -27,7 +27,7 @@ function fireKeyPair(
   target.dispatchEvent(new KeyboardEvent('keydown', { key: ch, bubbles: true }))
   return sleep(dwellMs).then(() => {
     target.value += ch
-    target.dispatchEvent(new InputEvent('input', { bubbles: true }))
+    target.dispatchEvent(new InputEvent('input', { inputType: 'insertText', bubbles: true }))
     target.dispatchEvent(new KeyboardEvent('keyup', { key: ch, bubbles: true }))
   })
 }
@@ -41,7 +41,7 @@ function firePaste(
   const event = new ClipboardEvent('paste', { clipboardData: dt, bubbles: true })
   target.dispatchEvent(event)
   target.value += text
-  target.dispatchEvent(new InputEvent('input', { bubbles: true }))
+  target.dispatchEvent(new InputEvent('input', { inputType: 'insertFromPaste', bubbles: true }))
 }
 
 function fireMouseMove(x: number, y: number): void {
@@ -58,7 +58,7 @@ function fireScroll(y: number): void {
 function fireBackspace(target: HTMLInputElement | HTMLTextAreaElement): void {
   target.dispatchEvent(new KeyboardEvent('keydown', { key: 'Backspace', bubbles: true }))
   target.value = target.value.slice(0, -1)
-  target.dispatchEvent(new InputEvent('input', { bubbles: true }))
+  target.dispatchEvent(new InputEvent('input', { inputType: 'deleteContentBackward', bubbles: true }))
   target.dispatchEvent(new KeyboardEvent('keyup', { key: 'Backspace', bubbles: true }))
 }
 
@@ -187,6 +187,40 @@ async function synthesizeLLMAgent(form: HTMLFormElement): Promise<void> {
   // No scroll, no typing — submit fast (<8s elapsed)
 }
 
+/**
+ * Stealth bot — sets input.value directly and dispatches bare InputEvent (no inputType),
+ * then attaches a file programmatically with no picker or drag-drop event.
+ *
+ * Triggers isScripted via:
+ *   1. no mouse or touch activity
+ *   2. reaction time < 50ms (focus → immediate input)
+ *   3. programmatic > 5 with no known-origin events
+ *
+ * Triggers isUploadAutomation via programmatic file attachment.
+ */
+async function synthesizeStealthBot(form: HTMLFormElement): Promise<void> {
+  const name = form.querySelector<HTMLInputElement>('#field-name')
+  const file = form.querySelector<HTMLInputElement>('#field-doc')
+  if (!name) return
+
+  // Focus then immediately set value — sub-1ms reaction trips the <50ms rule
+  name.focus()
+  for (const ch of 'agent_kyb_applicant') {
+    name.value += ch
+    // No inputType — these look programmatic to the collector
+    name.dispatchEvent(new InputEvent('input', { bubbles: true }))
+    await sleep(5)
+  }
+
+  // Programmatic file attachment: DataTransfer, no picker, no change event
+  if (file) {
+    const dt = new DataTransfer()
+    dt.items.add(new File(['fake kyb document content'], 'kyb-identity.pdf', { type: 'application/pdf' }))
+    file.files = dt.files
+    // Poll in upload.ts will detect the count grew without a change event
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Dispatcher
 // ---------------------------------------------------------------------------
@@ -205,6 +239,8 @@ export async function runScenario(
       return synthesizeScriptedBot(form)
     case 'llm':
       return synthesizeLLMAgent(form)
+    case 'stealth':
+      return synthesizeStealthBot(form)
     default:
       console.warn(`[demo] unknown scenario: ${name}`)
   }
