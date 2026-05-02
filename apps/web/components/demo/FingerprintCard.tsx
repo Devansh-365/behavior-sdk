@@ -2,7 +2,7 @@
 
 import type { ReactElement } from 'react'
 import { AlertTriangle, Fingerprint } from 'lucide-react'
-import type { FingerprintSignals } from 'behavior-sdk'
+import type { FingerprintSignals } from "@devanshhq/nyasa";
 
 interface FingerprintCardProps {
   fingerprint: FingerprintSignals | null

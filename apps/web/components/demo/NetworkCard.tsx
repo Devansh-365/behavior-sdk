@@ -2,7 +2,7 @@
 
 import type { ReactElement } from 'react'
 import { Wifi, Zap, Clock } from 'lucide-react'
-import type { NetworkSignals } from 'behavior-sdk'
+import type { NetworkSignals } from "@devanshhq/nyasa";
 
 interface NetworkCardProps {
   network: NetworkSignals | null

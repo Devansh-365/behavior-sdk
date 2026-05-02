@@ -2,7 +2,7 @@
 
 import { useState, useEffect, type ReactElement } from 'react'
 import { ChevronDown, ChevronRight, Copy, Check, Code2 } from 'lucide-react'
-import type { BehaviorPayload } from 'behavior-sdk'
+import type { BehaviorPayload } from "@devanshhq/nyasa";
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 

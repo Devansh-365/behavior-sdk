@@ -1,8 +1,8 @@
 ## Behavior Analysis SDK — Build Context
 
 This is an npm-workspaces monorepo:
-- `apps/sdk/` — `behavior-sdk` package (browser SDK, ESM + IIFE bundles)
-- `apps/demo/` — Vite + TS demo app that consumes the SDK via path alias for HMR
+- `apps/sdk/` — `@devanshhq/nyasa` package (browser SDK, ESM + IIFE bundles)
+- `apps/web/` — Next.js site (docs + live demo consuming `@devanshhq/nyasa`)
 
 Read in this order before touching any code:
 
@@ -18,8 +18,7 @@ For unit sequencing, see `specs/00-build-plan.md`.
 
 - `npm run typecheck` — typecheck all workspaces
 - `npm run build` — build SDK only (produces `apps/sdk/dist/`)
-- `npm run demo` — start Vite dev server with HMR on SDK source
-- `npm run demo:build` — build SDK + demo (deployable static files in `apps/demo/dist/`)
+- `npm run web` — start Next.js dev server (marketing, docs, demo)
 
 ## Rules
 

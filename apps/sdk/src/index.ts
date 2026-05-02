@@ -6,13 +6,13 @@
  * the scoring API via sendBeacon (non-blocking, survives page unload).
  *
  * ESM usage (bundler):
- *   import { collect } from 'behavior-sdk'
+ *   import { collect } from '@devanshhq/nyasa'
  *   const handle = collect('#signup-form', { endpoint: '/score', sessionId: crypto.randomUUID() })
  *   // SPA shutdown: handle.flush()  (manual send + detach)
  *   // Or just: handle.stop()        (detach without sending)
  *
  * IIFE usage (script tag):
- *   <script src="behavior-sdk.iife.js"></script>
+ *   <script src="index.global.js"></script>
  *   <script>BehaviorSDK.collect('#signup-form', { endpoint: '/score', sessionId: '...' })</script>
  */
 
@@ -28,7 +28,7 @@ export function collect(
       ? document.querySelector<HTMLElement>(selectorOrEl)
       : selectorOrEl
 
-  if (!formEl) throw new Error(`[behavior-sdk] element not found: ${String(selectorOrEl)}`)
+  if (!formEl) throw new Error(`[nyasa] element not found: ${String(selectorOrEl)}`)
 
   const scanner = new BehaviorScanner()
   scanner.attach(formEl)

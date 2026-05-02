@@ -2,7 +2,7 @@
 
 ## Monorepo layout
 
-npm workspaces — two packages under `apps/`:
+npm workspaces — `@devanshhq/nyasa` SDK under `apps/sdk/` and Next.js site under `apps/web/`:
 
 ```
 zoven/
@@ -10,7 +10,7 @@ zoven/
 ├── tsconfig.base.json            # shared strict TS config
 │
 ├── apps/
-│   ├── sdk/                      # name: "behavior-sdk"
+│   ├── sdk/                      # name: "@devanshhq/nyasa"
 │   │   ├── package.json
 │   │   ├── tsconfig.json
 │   │   ├── tsup.config.ts        # ESM + IIFE (globalName: "BehaviorSDK")
@@ -45,31 +45,8 @@ zoven/
 │   │           ├── isLLMAgent.ts
 │   │           └── isUploadAutomation.ts
 │   │
-│   └── demo/                     # name: "demo" (private)
-│       ├── package.json          # deps: "behavior-sdk": "*", @types/node
-│       ├── vite.config.ts        # alias 'behavior-sdk' → '../sdk/src/index.ts' (default)
-│       │                         # USE_SDK_PACKAGE=true → resolves via workspace dist/
-│       ├── tsconfig.json
-│       ├── index.html
-│       └── src/
-│           ├── main.tsx          # React root mount
-│           ├── App.tsx           # layout: scanner hook → prop-drills to panels
-│           ├── scenarios.ts      # Human / ScriptedBot / LLMAgent / StealthBot synthesis
-│           ├── styles.css
-│           ├── components/
-│           │   ├── VerdictCard.tsx      # hero verdict: Human / Bot / LLM / Headless
-│           │   ├── DemoForm.tsx         # form with #field-name, #field-message, #field-doc
-│           │   ├── ScenariosPanel.tsx   # 4 scenario buttons
-│           │   ├── SignalsCard.tsx       # live behavioral signal readout
-│           │   ├── DetectionsCard.tsx   # detection rules with severity badges
-│           │   ├── FingerprintCard.tsx  # WebGL renderer, audio hash, pills
-│           │   ├── NetworkCard.tsx      # reaction time, connection class, timing
-│           │   ├── PayloadViewer.tsx    # collapsible JSON + copy button
-│           │   └── Header.tsx
-│           └── lib/
-│               ├── useScanner.ts   # React hook: BehaviorScanner attach + 250ms poll
-│               ├── verdict.ts      # derives VerdictKind + confidence from Detections
-│               └── format.ts       # formatting helpers
+│   └── web/                      # Next.js (private); deps: "@devanshhq/nyasa": "*"
+│       └── app/ demo/ docs/ components/ lib/ content/docs/ …
 │
 ├── CLAUDE.md / context/ / specs/
 └── README.md
@@ -87,11 +64,9 @@ Behavioral collectors implement `{ getSignals(): T, detach(): void }`. The scann
 
 Fingerprint and one-shot network collectors are plain functions — no lifecycle. `BehaviorScanner.#getFingerprint()` caches the fingerprint result after the first successful read (cache skipped if `iframe.consistent === false`, e.g. `document.body` not yet available).
 
-## Demo dev loop
+## Web demo (`apps/web`)
 
-Default (`npm run demo`): Vite resolves `behavior-sdk` via a `resolve.alias` to `../sdk/src/index.ts`. Any change to SDK source triggers HMR immediately — no rebuild step.
-
-Package mode (`npm run demo:package`): builds the SDK first (`tsup`), then runs Vite with `USE_SDK_PACKAGE=true` which removes the alias. Vite resolves `behavior-sdk` through the workspace symlink to `apps/sdk/dist/index.js`. Use this to verify the actual consumer experience before shipping.
+The live demo (`/demo`) is a Next.js client route. It depends on the workspace package **`@devanshhq/nyasa`**. For local dev, `apps/web/tsconfig` can map `@devanshhq/nyasa` to `../sdk/src/index.ts` for instant typecheck; production/Vercel builds run `tsup` first so imports resolve to `apps/sdk/dist/`.
 
 ## 3-way actor taxonomy
 

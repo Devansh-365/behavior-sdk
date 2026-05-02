@@ -1,8 +1,8 @@
 'use client'
 
 import { useEffect, useRef, useState, useCallback } from 'react'
-import { BehaviorScanner } from 'behavior-sdk'
-import type { BehaviorPayload } from 'behavior-sdk'
+import { BehaviorScanner } from "@devanshhq/nyasa";
+import type { BehaviorPayload } from "@devanshhq/nyasa";
 
 export interface ScannerHandle {
   payload: BehaviorPayload | null

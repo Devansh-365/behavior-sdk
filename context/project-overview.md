@@ -38,7 +38,7 @@ Customer's page
 - Browser signal collection SDK (`apps/sdk/src/`)
 - ESM + IIFE build output (`apps/sdk/dist/`)
 - Client-side detection rules (pre-scoring signal analysis)
-- Demo app (`apps/demo/`) — live integration showcase with synthetic scenarios
+- Interactive demo (`apps/web/app/demo/`) — live integration showcase with synthetic scenarios (consumes **`@devanshhq/nyasa`**)
 
 **Out of scope:**
 - Scoring API / ML classifier (closed, separate service)

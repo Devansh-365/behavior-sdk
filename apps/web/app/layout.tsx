@@ -7,7 +7,7 @@ import type { ReactNode } from "react";
 import { Header } from "@/components/header";
 
 export const metadata: Metadata = {
-  title: "behavior-sdk — Real-time human / bot / AI classification",
+  title: "Real-time human / bot / AI classification",
   description:
     "Browser-side behavioral analysis SDK. Classifies sessions as human, authorized AI agent, or unauthorized bot using behavioral, fingerprint, and network signals.",
 };

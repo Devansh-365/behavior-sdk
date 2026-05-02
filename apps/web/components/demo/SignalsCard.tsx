@@ -1,7 +1,7 @@
 'use client'
 
 import { Activity } from 'lucide-react'
-import type { BehavioralSignals } from 'behavior-sdk'
+import type { BehavioralSignals } from "@devanshhq/nyasa";
 import type { ReactElement, ReactNode } from 'react'
 import { fmtNum, mean, variance } from '@/lib/format'
 

@@ -1,6 +1,9 @@
 {
-  "name": "behavior-sdk",
+  "name": "@devanshhq/nyasa",
   "version": "0.1.0",
+  "publishConfig": {
+    "access": "public"
+  },
   "description": "Browser-side behavior analysis SDK: classifies sessions as human / authorized AI agent / unauthorized bot",
   "type": "module",
   "main": "./dist/index.js",

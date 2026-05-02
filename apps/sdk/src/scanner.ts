@@ -136,7 +136,7 @@ export class BehaviorScanner {
    * Derives a client-side verdict for immediate feedback.
    */
   buildPayload(sessionId: string): BehaviorPayload {
-    if (!this.#collectors) throw new Error('[behavior-sdk] call attach() before buildPayload()')
+    if (!this.#collectors) throw new Error('[nyasa] call attach() before buildPayload()')
     const signals = this.#collectSignals()
     const detections = this.#runDetections(signals)
     const verdict = this.#deriveVerdict(detections)

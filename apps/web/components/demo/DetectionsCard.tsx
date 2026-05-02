@@ -2,7 +2,7 @@
 
 import type { ReactElement } from 'react'
 import { Shield, ShieldAlert } from 'lucide-react'
-import type { Detections, DetectionResult } from 'behavior-sdk'
+import type { Detections, DetectionResult } from "@devanshhq/nyasa";
 
 interface DetectionsCardProps {
   detections: Detections | null

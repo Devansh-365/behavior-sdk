@@ -29,7 +29,7 @@ export function Header({ sessionId, elapsedMs }: HeaderProps): ReactElement {
                 Live demo
               </span>
               <span className="text-muted-foreground text-xs font-normal">
-                behavior-sdk
+                nyasa
               </span>
             </div>
           </div>

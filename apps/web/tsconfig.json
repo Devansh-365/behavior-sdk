@@ -15,7 +15,7 @@
       }
     ],
     "paths": {
-      "behavior-sdk": [
+      "@devanshhq/nyasa": [
         "../sdk/src/index.ts"
       ],
       "@/*": [

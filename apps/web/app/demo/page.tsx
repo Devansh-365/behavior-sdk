@@ -1,7 +1,7 @@
 import { DemoApp } from "@/components/demo/DemoApp";
 
 export const metadata = {
-  title: "Live demo — behavior-sdk",
+  title: "Live demo",
 };
 
 export default function DemoPage() {

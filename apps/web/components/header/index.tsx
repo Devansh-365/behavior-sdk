@@ -19,7 +19,7 @@ export const Header = () => {
               "text-primary h-auto gap-2 px-2 py-1.5",
             )}
             href="/"
-            aria-label="behavior-sdk home"
+            aria-label="Home"
           >
             <BrandMark className="size-7" aria-hidden />
           </Link>

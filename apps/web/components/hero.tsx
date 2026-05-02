@@ -26,7 +26,7 @@ export function Hero() {
 
       <div className="mx-auto flex w-full max-w-2xl flex-wrap items-center justify-center gap-3">
         <Installer
-          command="npm install behavior-sdk"
+          command="npm install @devanshhq/nyasa"
           className="w-60 text-xs md:w-72"
         />
         <Button

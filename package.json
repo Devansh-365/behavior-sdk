@@ -8,7 +8,8 @@
     "apps/*"
   ],
   "scripts": {
-    "build": "npm run build -w behavior-sdk",
+    "build": "npm run build -w @devanshhq/nyasa",
+    "build:vercel": "npm run build -w @devanshhq/nyasa && npm run build -w web",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "web": "npm run dev -w web",
     "prepare": "husky"

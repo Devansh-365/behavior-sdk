@@ -1,4 +1,4 @@
-import type { BehaviorPayload, Detections } from 'behavior-sdk'
+import type { BehaviorPayload, Detections } from "@devanshhq/nyasa";
 
 export type VerdictKind = 'analyzing' | 'human' | 'headless' | 'scripted' | 'llm' | 'multiple'
 

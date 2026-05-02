@@ -5,7 +5,7 @@ const withMDX = createMDX();
 /** @type {import('next').NextConfig} */
 const config = {
   reactStrictMode: true,
-  transpilePackages: ['behavior-sdk'],
+  transpilePackages: ["@devanshhq/nyasa"],
 };
 
 export default withMDX(config);

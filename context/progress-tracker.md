@@ -17,7 +17,7 @@ The SDK now collects 13 behavioral + 7 fingerprint + 3 network signals. Added: i
 - [x] ESM + IIFE bundles (`window.BehaviorSDK` global)
 - [x] `computeVariance` in `apps/sdk/src/utils.ts`
 - [x] tsup + tsc build pipeline, zero errors
-- [x] npm-workspaces monorepo (`apps/sdk/` + `apps/demo/`)
+- [x] npm-workspaces monorepo (`apps/sdk/` + `apps/web/`)
 
 ### Behavioral collectors (13)
 - [x] `keystroke.ts` — dwells + flights arrays
@@ -55,8 +55,8 @@ The SDK now collects 13 behavioral + 7 fingerprint + 3 network signals. Added: i
 - [x] `isUploadAutomation` — programmatic file attachment + **AI-generated document flag** (EXIF Software match) + JPEG with no EXIF block
 - [x] `isMultimodalBot` — 4 cross-signal incoherence checks (natural mouse + precise clicks, typing + zero corrections + zero scroll, keyboard with no pointer, organic rhythm + instant field fills)
 
-### Demo app
-- [x] React 18 + Tailwind v4 + lucide-react
+### Web demo (`apps/web`)
+- [x] Next.js + Tailwind v4 + lucide-react
 - [x] `VerdictCard` — hero verdict: Human / Scripted Bot / LLM Agent / Headless / Multi-signal
 - [x] `SignalsCard` — live behavioral readout (keystroke, pointer, paste, corrections, input origin, file upload)
 - [x] `DetectionsCard` — all 4 rules with severity badges + red-pulse animation on first fire
@@ -65,8 +65,8 @@ The SDK now collects 13 behavioral + 7 fingerprint + 3 network signals. Added: i
 - [x] `PayloadViewer` — collapsible JSON + copy-to-clipboard
 - [x] `ScenariosPanel` — 4 synthetic scenarios
 - [x] Scenarios: Human (organic mouse, variable timing, Backspace corrections), Scripted Bot (uniform 50ms, no mouse), LLM Agent (paste chunks, brief mouse, no scroll), Stealth Bot (programmatic input + programmatic file attach)
-- [x] Vite source alias (`npm run demo`) for HMR on SDK source changes
-- [x] `USE_SDK_PACKAGE` mode (`npm run demo:package`) — builds SDK, resolves via real dist/
+- [x] `npm run web` — Next.js dev (HMR for web; SDK changes need rebuild or path alias in tsconfig)
+- [x] Vercel: `build:vercel` builds `@devanshhq/nyasa` then `web`
 
 ---
 
