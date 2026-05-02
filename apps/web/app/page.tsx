@@ -1,11 +1,16 @@
-import Link from 'next/link'
+import { Hero } from "@/components/hero";
+import { Footer } from "@/components/footer";
 
 export default function Home() {
   return (
-    <main className="flex min-h-dvh items-center justify-center">
-      <Link href="/demo" className="rounded-lg bg-cyan-500 px-5 py-2.5 text-sm font-semibold text-slate-950 hover:bg-cyan-400">
-        Go to demo →
-      </Link>
+    <main className="flex flex-1 flex-col">
+      {/* Hero column: vertical borders via container. Footer sits below with full-bleed top rule (matches header border). */}
+      <div className="container flex min-h-0 flex-1 flex-col">
+        <div className="border-border flex flex-1 flex-col justify-center border-b">
+          <Hero />
+        </div>
+      </div>
+      <Footer />
     </main>
-  )
+  );
 }

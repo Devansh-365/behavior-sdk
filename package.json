@@ -2,7 +2,7 @@
   "name": "zoven-monorepo",
   "private": true,
   "version": "0.0.0",
-  "description": "Behavior analysis SDK + demo (npm workspaces)",
+  "description": "Behavior analysis SDK and docs site (npm workspaces)",
   "type": "module",
   "workspaces": [
     "apps/*"
@@ -10,16 +10,14 @@
   "scripts": {
     "build": "npm run build -w behavior-sdk",
     "typecheck": "npm run typecheck --workspaces --if-present",
-    "demo": "npm run dev -w demo",
-    "demo:package": "npm run build -w behavior-sdk && USE_SDK_PACKAGE=true npm run dev -w demo",
-    "demo:build": "npm run build -w behavior-sdk && npm run build -w demo",
+    "web": "npm run dev -w web",
     "prepare": "husky"
   },
   "devDependencies": {
     "husky": "^9.1.7"
   },
   "overrides": {
-    "@types/react": "~18.3.28",
-    "@types/react-dom": "~18.3.7"
+    "@types/react": "19.2.14",
+    "@types/react-dom": "19.2.3"
   }
 }

@@ -1,8 +1,12 @@
 # dependencies
 node_modules/
+apps/web/.next/
 
 # build output
 dist/
+
+# fumadocs-mdx compiled config output
+.source/
 
 # os / editor
 .DS_Store
@@ -11,6 +15,9 @@ dist/
 # tooling state (not project files)
 .claude/
 .omc/
+
+# TypeScript incremental
+*.tsbuildinfo
 
 # scratch / draft files (not part of the repo)
 n.md
