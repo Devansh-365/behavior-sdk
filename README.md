@@ -1,6 +1,6 @@
 # nyasa
 
-> **See who is behind the form** — humans, scripted bots, headless browsers, and LLM-style agents leave different traces. nyasa collects behavioral, fingerprint, and network signals in the browser, runs **client-side detection rules**, and posts a structured payload to **your** endpoint so you can decide what to do next.
+> **See who is really in the browser** — humans, scripted automation, headless runtimes, and LLM-style agents leave different traces. nyasa collects behavioral, fingerprint, and network signals in the page, runs **client-side detection rules**, and posts a structured payload to **your** endpoint so you can score or route the session.
 
 [![Website — docs & demo](https://img.shields.io/badge/site-docs%20%26%20demo-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://nyasa-beta.vercel.app/)
 [![npm](https://img.shields.io/npm/v/@devanshhq/nyasa?style=for-the-badge&logo=npm&label=npm&color=CB3837)](https://www.npmjs.com/package/@devanshhq/nyasa)
@@ -12,7 +12,7 @@
 
 ## The problem
 
-Automation does not announce itself. Headless runtimes, scripted fill, and agent-driven browsers often **look like a normal session on the server**. By the time a request hits your API, you have already lost timing and environment detail that only exists in the client. nyasa runs **in the page**: it attaches collectors, evaluates detections locally, and uses `sendBeacon` to forward a payload you can score or route—without asking visitors for extra steps.
+Automation does not announce itself. Bots and agents often **look like a normal browser session** once traffic reaches your API. You lose timing and environment detail that only exists on the client. nyasa runs **in the page**: it attaches collectors across the **document and your chosen container**, evaluates detections locally, and uses `sendBeacon` to forward a payload you can score or route—without asking visitors for extra steps.
 
 ---
 
@@ -20,18 +20,17 @@ Automation does not announce itself. Headless runtimes, scripted fill, and agent
 
 | Area | What |
 | :--- | :--- |
-| **Identity, not intent** | Answers *who or what* is likely operating the browser. Product and risk rules stay on your side. |
+| **Identity, not intent** | Surfaces *who or what* is likely operating the session. Business and risk rules stay on your side. |
 | **Documented signals** | Behavioral, fingerprint, and network pillars described in the docs—so you know what each field implies. |
-| **Two ways to load** | **ESM** for bundlers and an **IIFE** build when you need a script tag ([see Quickstart](https://nyasa-beta.vercel.app/docs/quickstart)). |
-| **Try before you integrate** | Full docs, API reference, and a live demo on **[nyasa-beta.vercel.app](https://nyasa-beta.vercel.app/)**. |
+| **Flows beyond a single form** | Attach to a **wrapper element** (checkout, login, onboarding, agent surface) or scale up; many collectors already run at **document** scope. |
+| **Two ways to load** | **ESM** for bundlers and an **IIFE** build for a script tag ([Quickstart](https://nyasa-beta.vercel.app/docs/quickstart)). |
+| **Try it live** | Docs, API reference, and an interactive demo at **[nyasa-beta.vercel.app](https://nyasa-beta.vercel.app/)**. |
 
 ---
 
 ## Documentation
 
-**Start here → [Quickstart](https://nyasa-beta.vercel.app/docs/quickstart)** · [Home](https://nyasa-beta.vercel.app/docs) · [Demo](https://nyasa-beta.vercel.app/demo)
-
-Docs are written in MDX under [`apps/web/content/docs/`](apps/web/content/docs/). For how to add pages, see [`apps/web/DOCUMENTATION.md`](apps/web/DOCUMENTATION.md).
+**Start here → [Quickstart](https://nyasa-beta.vercel.app/docs/quickstart)** · [Docs home](https://nyasa-beta.vercel.app/docs) · [Demo](https://nyasa-beta.vercel.app/demo)
 
 ---
 
@@ -50,7 +49,8 @@ npm install @devanshhq/nyasa
 ```ts
 import { collect } from "@devanshhq/nyasa";
 
-const handle = collect("#signup-form", {
+// Pass a form, a div around a wizard, a section, or document.body — see Quickstart.
+const handle = collect("#your-flow-root", {
   endpoint: "https://your-api.example.com/ingest",
   sessionId: crypto.randomUUID(),
 });
