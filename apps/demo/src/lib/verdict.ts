@@ -17,6 +17,7 @@ const RULE_LABEL: Record<keyof Detections, string> = {
   isHeadless:         'Headless browser',
   isScripted:         'Scripted bot',
   isLLMAgent:         'LLM agent',
+  isAuthorizedAgent:  'Authorized agent signature', // ADDED PLACEHOLDER FOR DEMO BUILD
   isUploadAutomation: 'Upload automation',
   isMultimodalBot:    'Multimodal bot',
 }
@@ -25,6 +26,7 @@ const SUBKIND_FOR: Record<keyof Detections, Exclude<VerdictKind, 'analyzing' | '
   isHeadless:         'headless',
   isScripted:         'scripted',
   isLLMAgent:         'llm',
+  isAuthorizedAgent:  'llm', // ADDED PLACEHOLDER FOR DEMO BUILD
   isUploadAutomation: 'scripted',
   isMultimodalBot:    'scripted',
 }

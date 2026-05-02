@@ -34,6 +34,11 @@ import {
   prewarmAudioFingerprint,
   resetAudioFingerprint,
 } from './signals/fingerprint/audio'
+import {
+  collectIncognitoSignal,
+  prewarmIncognitoDetection,
+} from './signals/fingerprint/incognito'
+import { collectTimezoneSignal }     from './signals/fingerprint/timezone'
 
 import { attachReactionCollector }   from './signals/network/reaction'
 import { collectConnectionSignal }   from './signals/network/connection'
@@ -42,6 +47,7 @@ import { collectTimingSignal }       from './signals/network/timing'
 import { detectHeadless }            from './detections/isHeadless'
 import { detectScripted }            from './detections/isScripted'
 import { detectLLMAgent }            from './detections/isLLMAgent'
+import { detectAuthorizedAgent }      from './detections/isAuthorizedAgent'
 import { detectUploadAutomation }    from './detections/isUploadAutomation'
 import { detectMultimodalBot }       from './detections/isMultimodalBot'
 
@@ -64,6 +70,7 @@ import type {
   FingerprintSignals,
   Detections,
   BehaviorPayload,
+  Verdict,
 } from './types'
 
 /**
@@ -118,18 +125,21 @@ export class BehaviorScanner {
     }
     // Kick off async fingerprints so they're ready by the time buildPayload() is called.
     prewarmAudioFingerprint()
+    prewarmIncognitoDetection()
     return this
   }
 
   /**
    * Collect all signals and run detection rules.
    * Safe to call repeatedly — collectors stay attached until detach().
+   * Derives a client-side verdict for immediate feedback.
    */
   buildPayload(sessionId: string): BehaviorPayload {
     if (!this.#collectors) throw new Error('[behavior-sdk] call attach() before buildPayload()')
     const signals = this.#collectSignals()
     const detections = this.#runDetections(signals)
-    return { sessionId, collectedAt: new Date().toISOString(), signals, detections }
+    const verdict = this.#deriveVerdict(detections)
+    return { sessionId, collectedAt: new Date().toISOString(), signals, detections, verdict }
   }
 
   /** Remove all event listeners. Call after flush to avoid memory leaks. */
@@ -156,6 +166,43 @@ export class BehaviorScanner {
   // ---------------------------------------------------------------------------
   // Private
   // ---------------------------------------------------------------------------
+
+  /**
+   * Derives a simple, deterministic client-side classification from current
+   * detections. Strategy 2026 Wedge: Prioritize Authorized AI, then categorize
+   * all others as Human or Unauthorized Bot based on behavioral markers.
+   */
+  #deriveVerdict(detections: Detections): Verdict {
+    const badges: string[] = [];
+    
+    // Wedge: Authorized Agents have validated identity, bypassing behavior rules
+    if (detections.isAuthorizedAgent.detected) {
+      return { kind: 'AuthorizedAgent', confidence: 1.0, badges: ['Valid-Identity'] };
+    }
+
+    // High severity detections often indicate undeniable bot/headless presence
+    if (detections.isHeadless.detected && detections.isHeadless.severity === 'high') {
+      badges.push('CDP-Markers');
+    }
+    
+    // Collect badges from detections to provide some feedback context
+    Object.entries(detections).forEach(([key, res]) => {
+      if (res.detected && key !== 'isAuthorizedAgent') {
+        // Simple heuristic: map detection names to badge labels
+        const label = key.replace('is', '').replace(/([A-Z])/g, '-$1').replace(/^-/, '');
+        badges.push(`${label} (${res.severity})`);
+      }
+    });
+
+    if (badges.length > 0) {
+      // Crude confidence calculation for now: fewer high severity = higher confidence it's a bot?
+      // No, that's wrong. Let's make it simpler.
+      return { kind: 'UnauthorizedBot', confidence: 0.8, badges: [...new Set(badges)] };
+    }
+
+    // Default assume human if no bot markers detected
+    return { kind: 'Human', confidence: 1.0, badges: [] };
+  }
 
   #collectSignals(): CollectedSignals {
     const c = this.#collectors!  // guarded by buildPayload() check above
@@ -191,11 +238,13 @@ export class BehaviorScanner {
   #getFingerprint(): FingerprintSignals {
     if (this.#fingerprintCache) return this.#fingerprintCache
     const fingerprint: FingerprintSignals = {
-      webdriver: collectWebdriverSignal(),
-      iframe:    collectIframeSignal(),
-      canvas:    collectCanvasSignal(),
-      webgl:     collectWebGLSignal(),
-      audio:     collectAudioSignal(),
+      webdriver:  collectWebdriverSignal(),
+      iframe:     collectIframeSignal(),
+      canvas:     collectCanvasSignal(),
+      webgl:      collectWebGLSignal(),
+      audio:      collectAudioSignal(),
+      incognito:  collectIncognitoSignal(),
+      timezone:   collectTimezoneSignal(),
     }
     const ready = fingerprint.iframe.consistent && fingerprint.audio.supported
     if (ready) this.#fingerprintCache = fingerprint
@@ -208,6 +257,7 @@ export class BehaviorScanner {
       isHeadless:         detectHeadless(signals),
       isScripted:         detectScripted(signals),
       isLLMAgent:         detectLLMAgent(signals, sessionMeta),
+      isAuthorizedAgent:  detectAuthorizedAgent(signals),
       isUploadAutomation: detectUploadAutomation(signals),
       isMultimodalBot:    detectMultimodalBot(signals),
     }

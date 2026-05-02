@@ -163,12 +163,27 @@ export interface BehavioralSignals {
   fieldTiming: FieldTimingSignals
 }
 
+export interface IncognitoSignals {
+  isIncognito: boolean | null  // null = could not determine
+  method: string | null        // 'quota' | 'indexeddb' | null
+}
+
+export interface TimezoneSignals {
+  timezone: string       // IANA timezone name (e.g. "America/New_York")
+  timezoneOffset: number // minutes west of UTC (Date.getTimezoneOffset())
+  language: string       // navigator.language
+  languages: string[]    // navigator.languages
+  consistent: boolean    // false = timezone region contradicts language country
+}
+
 export interface FingerprintSignals {
   webdriver: WebdriverSignals
   iframe: IframeSignals
   canvas: CanvasSignals
   webgl: WebGLSignals
   audio: AudioSignals
+  incognito: IncognitoSignals
+  timezone: TimezoneSignals
 }
 
 export interface NetworkSignals {
@@ -209,8 +224,25 @@ export interface Detections {
   isHeadless: DetectionResult
   isScripted: DetectionResult
   isLLMAgent: DetectionResult
+  isAuthorizedAgent: DetectionResult  // Cryptographic identity check Wedge
   isUploadAutomation: DetectionResult
   isMultimodalBot: DetectionResult
+}
+
+// ---------------------------------------------------------------------------
+// Verdict kinds (Ternary Model for 2026 Strategy)
+// ---------------------------------------------------------------------------
+
+export type VerdictKind =
+  | 'Human'
+  | 'AuthorizedAgent'  // Differentiator: validated cryptographic identity Wedge
+  | 'UnauthorizedBot'  // Renamed from 'Bot' to follow new taxonomy
+  | 'Analyzing'        // Temporary state if needed
+
+export interface Verdict {
+  kind: VerdictKind
+  confidence: number  // 0.0 - 1.0 based on severity/count of detections
+  badges: string[]    // e.g. ["CDP-Markers", "LLM-Rhythm", "UnauthorizedBot"]
 }
 
 // ---------------------------------------------------------------------------
@@ -230,6 +262,7 @@ export interface BehaviorPayload {
   collectedAt: string  // ISO 8601
   signals: CollectedSignals
   detections: Detections
+  verdict: Verdict     // Added: client-side derived classification
 }
 
 // ---------------------------------------------------------------------------
@@ -245,6 +278,6 @@ export interface CollectOptions {
 export interface CollectHandle {
   /** Detach all listeners. Safe to call multiple times. */
   stop: () => void
-  /** Build payload, send via sendBeacon, then detach. Idempotent. */
+  /** Build payload, send Beacon, then detach. Idempotent. */
   flush: () => void
 }

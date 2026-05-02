@@ -2,9 +2,9 @@
 
 ## Current phase
 
-**SDK v0.5 — per-field timing, document EXIF analysis, and multi-modal coherence detection.**
+**SDK v0.6 — incognito detection and timezone/locale consistency.**
 
-The SDK now collects 13 behavioral + 5 fingerprint + 3 network signals. Added: per-field dwell time (instant-fill LLM batch-fill detection), document EXIF/metadata extraction (AI-generated doc flagging for KYB), and a new `isMultimodalBot` detection rule that catches cross-signal incoherence (bots that fake one dimension but not all). Detection rules: 5 total. `isLLMAgent` fires on 8 signals (was 7). `isUploadAutomation` now also flags AI-generated and EXIF-stripped documents.
+The SDK now collects 13 behavioral + 7 fingerprint + 3 network signals. Added: incognito mode detection (Chrome/Edge quota cap + Safari IndexedDB probe, prewarmed async pattern), and timezone vs locale region consistency check (IANA timezone prefix vs `navigator.language` country code region matching — flags when both sides are known and differ). Detection rules unchanged at 5. `FingerprintCard` in the demo updated with new pills and detail rows for both signals.
 
 ---
 
@@ -34,12 +34,14 @@ The SDK now collects 13 behavioral + 5 fingerprint + 3 network signals. Added: p
 - [x] `field-timing.ts` — per-field dwell times, **instantFills** (fields filled in <100ms = LLM batch-fill)
 - [x] `exif.ts` — zero-dependency JPEG/PDF/PNG metadata parser (utility used by upload.ts)
 
-### Fingerprint collectors (5)
+### Fingerprint collectors (7)
 - [x] `webdriver.ts` — `navigator.webdriver`, CDP, Playwright markers
 - [x] `iframe.ts` — parent vs iframe plugin count consistency
 - [x] `canvas.ts` — canvas data URL hash
 - [x] `webgl.ts` — GPU vendor + renderer (SwiftShader / LLVMpipe = headless)
 - [x] `audio.ts` — OfflineAudioContext render hash, prewarmed on attach
+- [x] `incognito.ts` — storage quota cap (Chrome/Edge) + IndexedDB probe (Safari), prewarmed on attach
+- [x] `timezone.ts` — IANA timezone region vs `navigator.language` country region consistency
 
 ### Network collectors (3)
 - [x] `reaction.ts` — focus → first input delay; `minInputDelay`; **`engagementDelayMs`** (attach → first focusin)

@@ -31,6 +31,8 @@ export function FingerprintCard({ fingerprint }: FingerprintCardProps): JSX.Elem
   const c = fp?.canvas
   const g = fp?.webgl
   const a = fp?.audio
+  const inc = fp?.incognito
+  const tz = fp?.timezone
   const swiftshader = (g?.renderer ?? '').toLowerCase().includes('swiftshader')
   const llvmpipe = (g?.renderer ?? '').toLowerCase().includes('llvmpipe')
 
@@ -53,6 +55,8 @@ export function FingerprintCard({ fingerprint }: FingerprintCardProps): JSX.Elem
         <Pill label={`iframe ${i?.consistent ? 'consistent' : 'inconsistent'}`} on={i ? !i.consistent : false} />
         <Pill label="SwiftShader" on={swiftshader} />
         <Pill label="LLVMpipe" on={llvmpipe} />
+        <Pill label="incognito" on={inc?.isIncognito === true} />
+        <Pill label="tz mismatch" on={tz ? !tz.consistent : false} />
       </div>
 
       <div className="mt-4 space-y-1.5 border-t border-slate-800/60 pt-3">
@@ -78,6 +82,27 @@ export function FingerprintCard({ fingerprint }: FingerprintCardProps): JSX.Elem
           <span className="text-slate-400">Plugins parent / iframe</span>
           <span className="font-mono text-slate-200">
             {i?.parentPluginCount ?? 0} / {i?.iframePluginCount ?? 0}
+          </span>
+        </div>
+        <div className="flex items-center justify-between text-xs">
+          <span className="text-slate-400">Timezone</span>
+          <span className="font-mono text-slate-200">{tz?.timezone ?? '—'}</span>
+        </div>
+        <div className="flex items-center justify-between text-xs">
+          <span className="text-slate-400">Language</span>
+          <span className={`font-mono ${tz && !tz.consistent ? 'text-rose-400' : 'text-slate-200'}`}>
+            {tz?.language ?? '—'}
+            {tz && !tz.consistent && ' ⚠ region mismatch'}
+          </span>
+        </div>
+        <div className="flex items-center justify-between text-xs">
+          <span className="text-slate-400">Incognito</span>
+          <span className={`font-mono ${inc?.isIncognito === true ? 'text-rose-400' : 'text-slate-200'}`}>
+            {inc?.isIncognito === null || inc?.isIncognito === undefined
+              ? 'pending'
+              : inc.isIncognito
+              ? `yes (${inc.method})`
+              : `no (${inc.method})`}
           </span>
         </div>
       </div>
