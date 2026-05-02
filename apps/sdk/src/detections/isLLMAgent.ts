@@ -56,6 +56,12 @@ export function detectLLMAgent(signals: CollectedSignals, sessionMeta: SessionMe
   if (flights.length > 10 && computeVariance(flights) < 10)
     reasons.push('inter-keystroke timing suspiciously uniform across long session')
 
+  // Per-field dwell: LLMs batch-fill forms by pasting/setting each field in <100ms.
+  // Two or more instant fills across distinct fields is a reliable LLM-act signal.
+  const { instantFills, totalFields } = behavioral.fieldTiming
+  if (totalFields >= 2 && instantFills >= 2)
+    reasons.push(`${instantFills}/${totalFields} fields filled in <100ms — LLM batch-fill pattern`)
+
   // Session rhythm: LLM Act→Decide cycle produces a sawtooth of burst→silence→burst
   // burstCount > 3 = multiple inference cycles observed
   // gapVariance < 50000ms² = inter-burst gaps are regular (LLM has consistent inference time)

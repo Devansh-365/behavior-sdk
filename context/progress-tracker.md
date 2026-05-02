@@ -2,9 +2,9 @@
 
 ## Current phase
 
-**SDK v0.4 — expanded behavioral signal coverage with LLM-specific detection signals.**
+**SDK v0.5 — per-field timing, document EXIF analysis, and multi-modal coherence detection.**
 
-The SDK now collects 12 behavioral + 5 fingerprint + 3 network signals. `isLLMAgent` fires on 7 signals (was 4). New: engagement delay, mouse stillness ratio, tab visibility, click precision, and session rhythm (burst-pause-burst inference pattern). Demo updated to surface all new signals in the live panel.
+The SDK now collects 13 behavioral + 5 fingerprint + 3 network signals. Added: per-field dwell time (instant-fill LLM batch-fill detection), document EXIF/metadata extraction (AI-generated doc flagging for KYB), and a new `isMultimodalBot` detection rule that catches cross-signal incoherence (bots that fake one dimension but not all). Detection rules: 5 total. `isLLMAgent` fires on 8 signals (was 7). `isUploadAutomation` now also flags AI-generated and EXIF-stripped documents.
 
 ---
 
@@ -19,7 +19,7 @@ The SDK now collects 12 behavioral + 5 fingerprint + 3 network signals. `isLLMAg
 - [x] tsup + tsc build pipeline, zero errors
 - [x] npm-workspaces monorepo (`apps/sdk/` + `apps/demo/`)
 
-### Behavioral collectors (12)
+### Behavioral collectors (13)
 - [x] `keystroke.ts` — dwells + flights arrays
 - [x] `mouse.ts` — path + curvature + **stillnessRatio** (fraction of consecutive samples with < 2px movement)
 - [x] `touch.ts` — touchstart / touchend / touchmove counts
@@ -27,10 +27,12 @@ The SDK now collects 12 behavioral + 5 fingerprint + 3 network signals. `isLLMAg
 - [x] `paste.ts` — `pasteRatio = pastedChars / totalChars`
 - [x] `scroll.ts` — depths + timestamps
 - [x] `input-type.ts` — `InputEvent.inputType` → typed / pasted / dropped / deleted / programmatic
-- [x] `upload.ts` — picker vs drag-drop vs programmatic file attachment, 500ms poll
+- [x] `upload.ts` — picker vs drag-drop vs programmatic; **EXIF analysis** per picked file (AI-generated flag, software tag, missing metadata)
 - [x] `visibility.ts` — hiddenCount, blurCount, totalHiddenMs (tab switching)
 - [x] `click.ts` — centerOffsets (dx/dy from element bounding box center), targeted count
 - [x] `session-rhythm.ts` — eventGaps, maxGapMs, burstCount, meanBurstGapMs, gapVariance
+- [x] `field-timing.ts` — per-field dwell times, **instantFills** (fields filled in <100ms = LLM batch-fill)
+- [x] `exif.ts` — zero-dependency JPEG/PDF/PNG metadata parser (utility used by upload.ts)
 
 ### Fingerprint collectors (5)
 - [x] `webdriver.ts` — `navigator.webdriver`, CDP, Playwright markers
@@ -44,11 +46,12 @@ The SDK now collects 12 behavioral + 5 fingerprint + 3 network signals. `isLLMAg
 - [x] `connection.ts` — `navigator.connection` snapshot (effectiveType, rtt, downlink, saveData)
 - [x] `timing.ts` — Navigation Timing: DNS / TCP / TLS / TTFB / domLoad
 
-### Detection rules (4)
+### Detection rules (5)
 - [x] `isHeadless` — 6 signals (webdriver, CDP, Playwright, iframe, WebGL SwiftShader/LLVMpipe, audio)
 - [x] `isScripted` — 8 signals (no-pointer mobile-aware, curvature variance, dwell var, flight var, paste ratio, zero corrections, reaction < 50ms, programmatic input > 5)
-- [x] `isLLMAgent` — 7 signals (paste ratio, no-scroll-with-input, fast completion, machine-speed burst, uniform flight variance, **mouse stillness > 70%**, **click precision < 3px offset**, **burst-pause-burst session rhythm**)
-- [x] `isUploadAutomation` — programmatic file attachment with no picker or drag-drop
+- [x] `isLLMAgent` — 8 signals (paste ratio, no-scroll-with-input, fast completion, machine-speed burst, uniform flight variance, mouse stillness > 70%, click precision < 3px offset, burst-pause-burst session rhythm, **instant field fills ≥ 2**)
+- [x] `isUploadAutomation` — programmatic file attachment + **AI-generated document flag** (EXIF Software match) + JPEG with no EXIF block
+- [x] `isMultimodalBot` — 4 cross-signal incoherence checks (natural mouse + precise clicks, typing + zero corrections + zero scroll, keyboard with no pointer, organic rhythm + instant field fills)
 
 ### Demo app
 - [x] React 18 + Tailwind v4 + lucide-react
@@ -77,12 +80,12 @@ The SDK now collects 12 behavioral + 5 fingerprint + 3 network signals. `isLLMAg
 
 ## Next up
 
-All quick-win roadmap signals are now implemented. Remaining items from `specs/02-future-roadmap.md`:
+Remaining low-priority items from `specs/02-future-roadmap.md` (all WAIT/SKIP from research evaluation):
 
 1. **CSS pointer type** — `fingerprint/pointerType.ts` (20 min) — UA vs pointer-media-query consistency check.
 2. **Idle gap analysis** — computed from existing scroll + keystroke timestamps (~30 min, no new collector).
 3. **Media device count** — `fingerprint/mediaDevices.ts` (~30 min) — 0 cameras + 0 mics on a claimed desktop = headless signal.
-4. **Native API integrity** — `fingerprint/nativeIntegrity.ts` (1 hour) — detect Playwright stealth patching via toString !== `[native code]`.
+4. **Native API integrity** — `fingerprint/nativeIntegrity.ts` (1 hour) — WAIT; catches unsophisticated bots only, Camoufox/Patchright immune.
 5. **Fingerprint consistency cross-check** — `detections/isFingerprintInconsistent.ts` (tier 2) — combines pointer type, media devices, webgl, canvas to detect spoofing.
 
-Demo: update scenarios to demonstrate visibility, click precision, and session rhythm signals in the synthetic runs.
+Demo: update scenarios to exercise `isMultimodalBot` and per-field timing signals in the synthetic runs.

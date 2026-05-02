@@ -23,6 +23,7 @@ import { attachUploadCollector }       from './signals/behavioral/upload'
 import { attachVisibilityCollector }   from './signals/behavioral/visibility'
 import { attachClickCollector }         from './signals/behavioral/click'
 import { attachSessionRhythmCollector } from './signals/behavioral/session-rhythm'
+import { attachFieldTimingCollector }   from './signals/behavioral/field-timing'
 
 import { collectWebdriverSignal }    from './signals/fingerprint/webdriver'
 import { collectIframeSignal }       from './signals/fingerprint/iframe'
@@ -42,6 +43,7 @@ import { detectHeadless }            from './detections/isHeadless'
 import { detectScripted }            from './detections/isScripted'
 import { detectLLMAgent }            from './detections/isLLMAgent'
 import { detectUploadAutomation }    from './detections/isUploadAutomation'
+import { detectMultimodalBot }       from './detections/isMultimodalBot'
 
 import type {
   Collector,
@@ -56,6 +58,7 @@ import type {
   VisibilitySignals,
   ClickSignals,
   SessionRhythmSignals,
+  FieldTimingSignals,
   ReactionSignals,
   CollectedSignals,
   FingerprintSignals,
@@ -82,6 +85,7 @@ type AttachedCollectors = {
   visibility: Collector<VisibilitySignals>
   click: Collector<ClickSignals>
   sessionRhythm: Collector<SessionRhythmSignals>
+  fieldTiming: Collector<FieldTimingSignals>
   // network
   reaction: Collector<ReactionSignals>
 }
@@ -106,9 +110,10 @@ export class BehaviorScanner {
       scroll:     attachScrollCollector(),
       inputType:  attachInputTypeCollector(formEl),
       upload:     attachUploadCollector(formEl),
-      visibility: attachVisibilityCollector(),
+      visibility:    attachVisibilityCollector(),
       click:         attachClickCollector(document),
       sessionRhythm: attachSessionRhythmCollector(),
+      fieldTiming:   attachFieldTimingCollector(formEl),
       reaction:      attachReactionCollector(formEl, this.#startedAt),
     }
     // Kick off async fingerprints so they're ready by the time buildPayload() is called.
@@ -141,6 +146,7 @@ export class BehaviorScanner {
     this.#collectors.visibility.detach()
     this.#collectors.click.detach()
     this.#collectors.sessionRhythm.detach()
+    this.#collectors.fieldTiming.detach()
     this.#collectors.reaction.detach()
     this.#collectors = null
     this.#fingerprintCache = null
@@ -163,9 +169,10 @@ export class BehaviorScanner {
         scroll:     c.scroll.getSignals(),
         inputType:  c.inputType.getSignals(),
         upload:     c.upload.getSignals(),
-        visibility: c.visibility.getSignals(),
+        visibility:    c.visibility.getSignals(),
         click:         c.click.getSignals(),
         sessionRhythm: c.sessionRhythm.getSignals(),
+        fieldTiming:   c.fieldTiming.getSignals(),
       },
       fingerprint: this.#getFingerprint(),
       network: {
@@ -202,6 +209,7 @@ export class BehaviorScanner {
       isScripted:         detectScripted(signals),
       isLLMAgent:         detectLLMAgent(signals, sessionMeta),
       isUploadAutomation: detectUploadAutomation(signals),
+      isMultimodalBot:    detectMultimodalBot(signals),
     }
   }
 }

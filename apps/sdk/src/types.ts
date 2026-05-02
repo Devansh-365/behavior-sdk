@@ -106,11 +106,26 @@ export interface InputTypeSignals {
   programmatic: number // input event with empty/unknown inputType
 }
 
+export interface FieldTimingSignals {
+  fieldDwells: Record<string, number[]>  // field name/id → ms spent focused per visit
+  instantFills: number                    // visits where field got content in <100ms
+  totalFields: number                     // distinct fields visited
+}
+
+export interface ExifSignals {
+  fileType: 'jpeg' | 'pdf' | 'png' | 'unknown'
+  hasExif: boolean           // JPEG only: false = no EXIF block (suspicious for claimed photo)
+  software: string | null    // EXIF Software tag or PDF /Producer value
+  aiGenerated: boolean       // software matched a known AI generator pattern
+  metadataEmpty: boolean     // no readable metadata found at all
+}
+
 export interface UploadSignals {
-  pickerCount: number       // change events on file inputs
-  dragDropCount: number     // drop events with files
-  programmaticCount: number // file count grew without picker or drop event
-  filesAttached: number     // total files currently in form file inputs
+  pickerCount: number         // change events on file inputs
+  dragDropCount: number       // drop events with files
+  programmaticCount: number   // file count grew without picker or drop event
+  filesAttached: number       // total files currently in form file inputs
+  exifResults: ExifSignals[]  // metadata analysis for each file attached via picker
 }
 
 export interface SessionRhythmSignals {
@@ -145,6 +160,7 @@ export interface BehavioralSignals {
   visibility: VisibilitySignals
   click: ClickSignals
   sessionRhythm: SessionRhythmSignals
+  fieldTiming: FieldTimingSignals
 }
 
 export interface FingerprintSignals {
@@ -194,6 +210,7 @@ export interface Detections {
   isScripted: DetectionResult
   isLLMAgent: DetectionResult
   isUploadAutomation: DetectionResult
+  isMultimodalBot: DetectionResult
 }
 
 // ---------------------------------------------------------------------------

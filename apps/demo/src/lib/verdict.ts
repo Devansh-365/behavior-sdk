@@ -18,6 +18,7 @@ const RULE_LABEL: Record<keyof Detections, string> = {
   isScripted:         'Scripted bot',
   isLLMAgent:         'LLM agent',
   isUploadAutomation: 'Upload automation',
+  isMultimodalBot:    'Multimodal bot',
 }
 
 const SUBKIND_FOR: Record<keyof Detections, Exclude<VerdictKind, 'analyzing' | 'human' | 'multiple'>> = {
@@ -25,6 +26,7 @@ const SUBKIND_FOR: Record<keyof Detections, Exclude<VerdictKind, 'analyzing' | '
   isScripted:         'scripted',
   isLLMAgent:         'llm',
   isUploadAutomation: 'scripted',
+  isMultimodalBot:    'scripted',
 }
 
 const SHORT_LABEL: Record<VerdictKind, string> = {

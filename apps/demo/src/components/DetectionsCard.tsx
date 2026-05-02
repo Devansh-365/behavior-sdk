@@ -9,7 +9,8 @@ const RULES: Array<{ key: keyof Detections; label: string; blurb: string }> = [
   { key: 'isHeadless',         label: 'isHeadless',         blurb: 'Headless browser markers' },
   { key: 'isScripted',         label: 'isScripted',         blurb: 'Mechanical input pattern' },
   { key: 'isLLMAgent',         label: 'isLLMAgent',         blurb: 'LLM-style paste-and-go' },
-  { key: 'isUploadAutomation', label: 'isUploadAutomation', blurb: 'Programmatic file attachment' },
+  { key: 'isUploadAutomation', label: 'isUploadAutomation', blurb: 'Programmatic file attachment or AI-generated doc' },
+  { key: 'isMultimodalBot',    label: 'isMultimodalBot',    blurb: 'Cross-signal behavioral incoherence' },
 ]
 
 function severityClass(severity: DetectionResult['severity']): string {

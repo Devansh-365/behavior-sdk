@@ -48,6 +48,7 @@ export function SignalsCard({ signals }: SignalsCardProps): JSX.Element {
   const vis = signals?.visibility
   const cl = signals?.click
   const rhy = signals?.sessionRhythm
+  const ft = signals?.fieldTiming
   const dwellAvg = k ? mean(k.dwells) : 0
   const dwellVar = k ? variance(k.dwells) : 0
   const flightVar = k ? variance(k.flights) : 0
@@ -172,6 +173,33 @@ export function SignalsCard({ signals }: SignalsCardProps): JSX.Element {
             highlight={(up?.programmaticCount ?? 0) > 0}
           />
           <Metric label="Files attached" value={String(up?.filesAttached ?? 0)} />
+          {(up?.exifResults ?? []).map((r, i) => (
+            <Metric
+              key={i}
+              label={`File ${i + 1} (${r.fileType})`}
+              value={r.aiGenerated ? 'AI-generated' : r.metadataEmpty ? 'no metadata' : r.software ?? 'ok'}
+              highlight={r.aiGenerated || (r.fileType === 'jpeg' && !r.hasExif)}
+            />
+          ))}
+        </Section>
+
+        <Section title="Field timing">
+          <Metric label="Fields visited" value={String(ft?.totalFields ?? 0)} />
+          <Metric
+            label="Instant fills"
+            value={String(ft?.instantFills ?? 0)}
+            trail="<100ms"
+            highlight={(ft?.instantFills ?? 0) >= 2}
+          />
+          {Object.entries(ft?.fieldDwells ?? {}).slice(0, 4).map(([name, dwells]) => (
+            <Metric
+              key={name}
+              label={name}
+              value={String(Math.round((dwells.reduce((a, b) => a + b, 0) / Math.max(dwells.length, 1))))}
+              trail="ms avg"
+              highlight={dwells.some(d => d < 100)}
+            />
+          ))}
         </Section>
       </div>
     </section>

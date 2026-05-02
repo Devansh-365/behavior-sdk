@@ -1,9 +1,11 @@
-import type { Collector, UploadSignals } from '../../types'
+import type { Collector, ExifSignals, UploadSignals } from '../../types'
+import { analyzeFileExif } from './exif'
 
 export function attachUploadCollector(target: HTMLElement): Collector<UploadSignals> {
   let pickerCount = 0
   let dragDropCount = 0
   let programmaticCount = 0
+  const exifResults: ExifSignals[] = []
 
   // Track last-known file count per input to detect programmatic changes
   const knownCounts = new WeakMap<HTMLInputElement, number>()
@@ -20,8 +22,13 @@ export function attachUploadCollector(target: HTMLElement): Collector<UploadSign
     const input = e.target as HTMLInputElement
     if (input.type !== 'file') return
     pickerCount++
-    // Record the new count so the poll doesn't double-count it as programmatic
     knownCounts.set(input, input.files?.length ?? 0)
+    // Analyze each newly picked file asynchronously; results land whenever ready
+    if (input.files) {
+      for (const file of Array.from(input.files)) {
+        analyzeFileExif(file).then(result => { exifResults.push(result) })
+      }
+    }
   }
 
   function onDrop(e: DragEvent): void {
@@ -50,6 +57,7 @@ export function attachUploadCollector(target: HTMLElement): Collector<UploadSign
       dragDropCount,
       programmaticCount,
       filesAttached: totalFiles(),
+      exifResults: [...exifResults],
     }),
     detach: (): void => {
       clearInterval(pollId)
