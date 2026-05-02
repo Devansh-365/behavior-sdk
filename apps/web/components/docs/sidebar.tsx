@@ -35,33 +35,46 @@ export function DocsSidebar({
       !EXCLUDED_PAGES.has(item.url),
   );
 
+  const navButtonClass =
+    "font-sans h-auto min-h-9 w-full justify-start gap-2 rounded-lg border-0 px-2.5 py-2 text-[0.8125rem] leading-snug font-normal text-muted-foreground shadow-none transition-colors duration-200 " +
+    "hover:bg-muted/60 hover:text-foreground " +
+    "data-active:border-transparent data-active:bg-primary/10 data-active:font-medium data-active:text-foreground " +
+    "dark:data-active:bg-primary/15 " +
+    "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none";
+
   return (
     <Sidebar
-      className="sticky top-(--header-height) z-30 hidden h-[calc(100svh-var(--header-height))] overscroll-none border-r bg-transparent px-4 [--sidebar-menu-width:--spacing(56)] lg:flex"
+      className="sticky top-(--header-height) z-30 hidden h-[calc(100svh-var(--header-height))] overscroll-none border-r border-border/50 bg-transparent px-3 lg:flex"
       collapsible="none"
       {...props}
     >
-      <SidebarContent className="no-scrollbar w-(--sidebar-menu-width) overflow-x-hidden pb-8">
+      <SidebarContent className="no-scrollbar relative min-w-[15rem] max-w-[17.5rem] flex-1 overflow-x-hidden pb-10 font-sans">
         {topLevelPages.length > 0 && (
-          <SidebarGroup className="pt-6">
+          <SidebarGroup className="pt-5">
             <SidebarGroupContent>
-              <SidebarMenu>
+              <SidebarMenu className="gap-0.5">
                 {topLevelPages.map((item) => (
                   <SidebarMenuItem key={item.url}>
                     <SidebarMenuButton
                       asChild
                       isActive={item.url === pathname}
-                      className="data-[active=true]:border-accent data-[active=true]:bg-accent 3xl:fixed:w-full 3xl:fixed:max-w-48 relative h-[30px] w-fit overflow-visible border border-transparent text-[0.8rem] font-medium after:absolute after:inset-x-0 after:-inset-y-1 after:z-0 after:rounded-md"
+                      className={navButtonClass}
                     >
-                      <Link href={item.url}>
-                        <span className="absolute inset-0 flex w-(--sidebar-menu-width) bg-transparent" />
-                        {item.name}
-                        {PAGES_NEW.includes(item.url) && (
+                      <Link
+                        href={item.url}
+                        className="flex w-full cursor-pointer items-center gap-2"
+                      >
+                        <span className="min-w-0 flex-1 truncate">
+                          {item.name}
+                        </span>
+                        {PAGES_NEW.includes(item.url) ? (
                           <span
-                            className="flex size-2 rounded-full bg-blue-500"
+                            className="bg-primary ms-auto shrink-0 rounded-full px-1.5 py-px text-[10px] font-medium text-primary-foreground"
                             title="New"
-                          />
-                        )}
+                          >
+                            New
+                          </span>
+                        ) : null}
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -80,12 +93,12 @@ export function DocsSidebar({
           }
 
           return (
-            <SidebarGroup key={item.$id}>
-              <SidebarGroupLabel className="text-muted-foreground font-medium">
+            <SidebarGroup key={item.$id} className="mt-6">
+              <SidebarGroupLabel className="text-muted-foreground px-2 pb-2 text-[11px] font-semibold tracking-wide uppercase">
                 {item.name}
               </SidebarGroupLabel>
               <SidebarGroupContent>
-                <SidebarMenu>
+                <SidebarMenu className="gap-0.5">
                   {getPagesFromFolder(item).map((page) => {
                     if (EXCLUDED_PAGES.has(page.url)) {
                       return null;
@@ -96,17 +109,23 @@ export function DocsSidebar({
                         <SidebarMenuButton
                           asChild
                           isActive={page.url === pathname}
-                          className="data-[active=true]:border-accent data-[active=true]:bg-accent 3xl:fixed:w-full 3xl:fixed:max-w-48 relative h-[30px] w-fit overflow-visible border border-transparent text-[0.8rem] font-medium after:absolute after:inset-x-0 after:-inset-y-1 after:z-0 after:rounded-md"
+                          className={navButtonClass}
                         >
-                          <Link href={page.url}>
-                            <span className="absolute inset-0 flex w-(--sidebar-menu-width) bg-transparent" />
-                            {page.name}
-                            {PAGES_NEW.includes(page.url) && (
+                          <Link
+                            href={page.url}
+                            className="flex w-full cursor-pointer items-center gap-2"
+                          >
+                            <span className="min-w-0 flex-1 truncate">
+                              {page.name}
+                            </span>
+                            {PAGES_NEW.includes(page.url) ? (
                               <span
-                                className="flex size-2 rounded-full bg-blue-500"
+                                className="bg-primary ms-auto shrink-0 rounded-full px-1.5 py-px text-[10px] font-medium text-primary-foreground"
                                 title="New"
-                              />
-                            )}
+                              >
+                                New
+                              </span>
+                            ) : null}
                           </Link>
                         </SidebarMenuButton>
                       </SidebarMenuItem>
@@ -117,7 +136,7 @@ export function DocsSidebar({
             </SidebarGroup>
           );
         })}
-        <div className="from-background via-background/80 to-background/50 pointer-events-none absolute inset-x-2 -bottom-1 z-10 h-16 shrink-0 bg-linear-to-t blur-xs" />
+        <div className="from-background pointer-events-none absolute inset-x-0 bottom-0 z-10 h-12 shrink-0 bg-linear-to-t to-transparent" />
       </SidebarContent>
     </Sidebar>
   );

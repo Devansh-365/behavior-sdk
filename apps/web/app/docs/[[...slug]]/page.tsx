@@ -6,7 +6,10 @@ import { buttonVariants } from "@/components/ui/button";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { findNeighbour } from "fumadocs-core/page-tree";
 import { DocsTableOfContents } from "@/components/docs/toc";
-import { getMDXComponents } from "@/components/mdx";
+import {
+  mdxComponents,
+  withSuppressedDuplicateDocTitle,
+} from "@/components/mdx";
 // import { Metadata } from "next";
 // import { createMetadata } from "@/lib/metadata";
 
@@ -84,7 +87,12 @@ export default async function Page(props: PageProps<"/docs/[[...slug]]">) {
             </div>
           </div>
           <div className="w-full flex-1 *:data-[slot=alert]:first:mt-0">
-            <MDX components={getMDXComponents()} />
+            <MDX
+              components={withSuppressedDuplicateDocTitle(
+                mdxComponents,
+                page.data.title,
+              )}
+            />
           </div>
           <div className="flex h-16 w-full items-center gap-2">
             {neighbours.previous ? (
@@ -117,10 +125,10 @@ export default async function Page(props: PageProps<"/docs/[[...slug]]">) {
           </div>
         </div>
       </div>
-      <div className="sticky top-(--header-height) z-30 ml-auto hidden h-[calc(100svh-var(--header-height))] w-(--sidebar-width) flex-col gap-6 overflow-hidden overscroll-none border-l pb-8 xl:flex">
+      <div className="sticky top-(--header-height) z-30 ml-auto hidden h-[calc(100svh-var(--header-height))] w-(--sidebar-width) flex-col gap-6 overflow-hidden overscroll-none border-l border-border/50 bg-transparent pb-8 xl:flex">
         <div className="h-(--top-spacing) w-full shrink-0" />
         {page.data.toc?.length ? (
-          <div className="no-scrollbar flex flex-col gap-8 overflow-y-auto px-6">
+          <div className="no-scrollbar flex flex-col gap-6 overflow-y-auto px-5 pt-1">
             <DocsTableOfContents toc={page.data.toc} />
           </div>
         ) : null}

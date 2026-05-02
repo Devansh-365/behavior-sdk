@@ -105,18 +105,41 @@ export function DocsTableOfContents({
   }
 
   return (
-    <div className={cn("flex flex-col gap-2.5 p-4 pt-0 text-sm", className)}>
-      {toc.map((item) => (
-        <a
-          key={item.url}
-          href={item.url}
-          className="text-muted-foreground hover:text-foreground data-[active=true]:text-foreground no-underline transition-colors data-[active=true]:font-medium data-[depth=3]:pl-4 data-[depth=4]:pl-6"
-          data-active={item.url === `#${activeHeading}`}
-          data-depth={item.depth}
-        >
-          {item.title}
-        </a>
-      ))}
-    </div>
+    <nav
+      aria-label="On this page"
+      className={cn(
+        "border-border/50 font-sans pl-1 text-[0.8125rem] leading-snug",
+        className,
+      )}
+    >
+      <p className="text-muted-foreground mb-3 px-2 text-[11px] font-semibold tracking-wide uppercase">
+        On this page
+      </p>
+      <ul className="relative m-0 list-none space-y-0.5 border-l border-border/60 pl-0">
+        {toc.map((item) => {
+          const isActive = activeHeading && item.url === `#${activeHeading}`;
+          const depth = item.depth;
+          const indent =
+            depth >= 4 ? "pl-7" : depth === 3 ? "pl-5" : "pl-3";
+
+          return (
+            <li key={item.url} className="relative">
+              <a
+                href={item.url}
+                className={cn(
+                  "-ml-px block cursor-pointer border-l-2 border-transparent py-1.5 pr-2 no-underline transition-colors duration-200",
+                  indent,
+                  "text-muted-foreground hover:text-foreground",
+                  isActive &&
+                    "border-primary text-foreground font-medium dark:border-primary",
+                )}
+              >
+                {item.title}
+              </a>
+            </li>
+          );
+        })}
+      </ul>
+    </nav>
   );
 }
