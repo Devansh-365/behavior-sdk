@@ -52,6 +52,7 @@ import { detectAuthorizedAgent }      from './detections/isAuthorizedAgent'
 import { detectUploadAutomation }    from './detections/isUploadAutomation'
 import { detectMultimodalBot }       from './detections/isMultimodalBot'
 import { deriveVerdict }             from './scoring'
+import { extractFeatures }           from './features'
 
 import type {
   Collector,
@@ -218,13 +219,14 @@ export class BehaviorScanner {
 
   #runDetections(signals: CollectedSignals): Detections {
     const sessionMeta = { elapsedMs: performance.now() - this.#startedAt }
+    const features = extractFeatures(signals)
     return {
       isHeadless:         detectHeadless(signals),
-      isScripted:         detectScripted(signals),
-      isLLMAgent:         detectLLMAgent(signals, sessionMeta),
+      isScripted:         detectScripted(signals, features),
+      isLLMAgent:         detectLLMAgent(signals, sessionMeta, features),
       isAuthorizedAgent:  detectAuthorizedAgent(signals),
       isUploadAutomation: detectUploadAutomation(signals),
-      isMultimodalBot:    detectMultimodalBot(signals),
+      isMultimodalBot:    detectMultimodalBot(signals, features),
     }
   }
 }
