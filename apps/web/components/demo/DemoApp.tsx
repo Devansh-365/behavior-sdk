@@ -29,7 +29,7 @@ export function DemoApp() {
         <Header sessionId={sessionId} elapsedMs={elapsedMs} />
 
         <main className="flex flex-1 flex-col">
-          <div className="container max-w-7xl flex min-h-0 flex-1 flex-col px-4 py-8 sm:px-6 md:py-10 lg:px-8">
+          <div className="container flex min-h-0 flex-1 flex-col px-4 py-8 sm:px-6 md:py-10 lg:px-8">
             <div className="mb-8 flex flex-col gap-6 border-b border-border pb-8 md:flex-row md:items-end md:justify-between">
               <div className="max-w-xl space-y-3">
                 <Button
@@ -45,9 +45,9 @@ export function DemoApp() {
                 </Button>
                 <div>
                   <p className="text-muted-foreground mb-1 text-[11px] font-medium tracking-wide">
-                    Interactive lab
+                    Nyasa SDK · Interactive lab
                   </p>
-                  <h1 className="text-foreground text-2xl font-semibold tracking-tight sm:text-3xl">
+                  <h1 className="text-foreground font-serif text-2xl font-semibold tracking-tight sm:text-3xl">
                     Live demo
                   </h1>
                   <p className="text-muted-foreground mt-2 max-w-[65ch] text-pretty text-sm leading-relaxed sm:text-[15px]">

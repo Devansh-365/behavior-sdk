@@ -11,7 +11,7 @@ import { buttonVariants } from "@/components/ui/button";
 export const Header = () => {
   return (
     <header className="bg-fd-background/80 sticky inset-x-0 top-0 z-40 h-(--header-height) border-b backdrop-blur-sm transition-colors">
-      <div className="container mx-auto flex gap-2 size-full items-center justify-between px-3 md:px-4">
+      <div className="container flex size-full items-center justify-between gap-2 px-4 sm:px-6 lg:px-8">
         <nav className="flex items-center gap-3">
           <Link
             className={cn(
