@@ -3,9 +3,16 @@
 import type { ReactElement } from 'react'
 import { Wifi, Zap, Clock } from 'lucide-react'
 import type { NetworkSignals } from "@devanshhq/nyasa";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion'
 
 interface NetworkCardProps {
   network: NetworkSignals | null
+  embedded?: boolean
 }
 
 function fmtMs(n: number | null): string {
@@ -15,7 +22,10 @@ function fmt(n: number | null, suffix = ''): string {
   return n === null ? '—' : `${n}${suffix}`
 }
 
-export function NetworkCard({ network }: NetworkCardProps): ReactElement {
+export function NetworkCard({
+  network,
+  embedded = false,
+}: NetworkCardProps): ReactElement {
   const reaction = network?.reaction
   const conn = network?.connection
   const timing = network?.timing
@@ -25,17 +35,19 @@ export function NetworkCard({ network }: NetworkCardProps): ReactElement {
   const subhuman = min !== null && min < 50
   const botEngagement = engagement !== null && engagement < 200
 
-  return (
-    <section className="border-border bg-card rounded-xl border p-5 shadow-sm">
-      <div className="mb-3 flex items-center justify-between gap-2">
-        <h3 className="text-foreground flex items-center gap-2 text-sm font-semibold">
-          <Wifi className="text-primary size-3.5 shrink-0" aria-hidden />
-          Network
-        </h3>
-        <span className="text-muted-foreground font-mono text-[10px] uppercase tracking-wider">
-          timing pillar
-        </span>
-      </div>
+  const inner = (
+    <>
+      {!embedded && (
+        <div className="mb-3 flex items-center justify-between gap-2">
+          <h3 className="text-foreground flex items-center gap-2 text-sm font-semibold">
+            <Wifi className="text-primary size-3.5 shrink-0" aria-hidden />
+            Network
+          </h3>
+          <span className="text-muted-foreground font-mono text-[10px] tracking-wide">
+            timing
+          </span>
+        </div>
+      )}
       <div
         className={`rounded-lg border p-3 transition-colors duration-200 ${
           subhuman
@@ -81,9 +93,19 @@ export function NetworkCard({ network }: NetworkCardProps): ReactElement {
           </span>
         </div>
       </div>
-      <div className="border-border mt-4 space-y-1.5 border-t pt-3">
-        <div className="text-muted-foreground mb-1 text-[10px] font-semibold uppercase tracking-wider">
-          Connection
+      <Accordion
+        type="multiple"
+        defaultValue={['connection']}
+        className="mt-4 w-full"
+      >
+        <AccordionItem value="connection" className="border-border border-t">
+          <AccordionTrigger className="py-3 text-[13px] hover:no-underline">
+            Browser connection
+          </AccordionTrigger>
+          <AccordionContent>
+            <div className="border-border space-y-1.5 rounded-lg border bg-muted/15 px-3 py-2.5 dark:bg-muted/10">
+        <div className="text-muted-foreground mb-1 text-[11px] font-medium">
+          Network Information API
         </div>
         {conn?.supported ? (
           <>
@@ -119,12 +141,18 @@ export function NetworkCard({ network }: NetworkCardProps): ReactElement {
             navigator.connection unsupported (Firefox / Safari)
           </div>
         )}
-      </div>
-      <div className="border-border mt-4 space-y-1.5 border-t pt-3">
-        <div className="text-muted-foreground mb-1 flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider">
-          <Clock className="size-3" aria-hidden />
-          Page load
-        </div>
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+        <AccordionItem value="timing" className="border-border border-t">
+          <AccordionTrigger className="py-3 text-[13px] hover:no-underline">
+            <span className="flex items-center gap-2">
+              <Clock className="size-3.5 opacity-80" aria-hidden />
+              Page load timing
+            </span>
+          </AccordionTrigger>
+          <AccordionContent>
+            <div className="border-border space-y-1.5 rounded-lg border bg-muted/15 px-3 py-2.5 dark:bg-muted/10">
         {timing?.supported ? (
           <>
             <div className="flex items-center justify-between text-xs">
@@ -149,7 +177,24 @@ export function NetworkCard({ network }: NetworkCardProps): ReactElement {
             Navigation Timing entry unavailable
           </div>
         )}
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
+    </>
+  )
+
+  if (embedded) {
+    return (
+      <div className="border-border border-t px-4 py-5 sm:px-5 sm:py-6">
+        {inner}
       </div>
+    )
+  }
+
+  return (
+    <section className="border-border bg-card rounded-2xl border p-5 shadow-sm ring-1 ring-black/[0.04] dark:ring-white/[0.06] sm:p-6">
+      {inner}
     </section>
   )
 }

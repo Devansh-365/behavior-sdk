@@ -18,8 +18,11 @@ const WEIGHTS = {
   isAuthorizedAgent:  { high: 1.00, medium: 1.00, low: 1.00 },
 } satisfies Record<keyof Detections, SeverityWeights>
 
-/** Stable display labels independent of symbol names. */
-const LABELS: Record<keyof Detections, string> = {
+/**
+ * Stable display labels independent of symbol names.
+ * Exposed for docs sites and dashboard UIs — keep in sync with payload JSON keys.
+ */
+export const DETECTION_DISPLAY_LABELS: Record<keyof Detections, string> = {
   isHeadless:         'Headless Browser',
   isScripted:         'Scripted Bot',
   isLLMAgent:         'LLM Agent',
@@ -38,7 +41,7 @@ const LABELS: Record<keyof Detections, string> = {
  */
 export function deriveVerdict(detections: Detections): Verdict {
   if (detections.isAuthorizedAgent.detected) {
-    return { kind: 'AuthorizedAgent', confidence: 1.0, badges: ['Authorized Agent'] }
+    return { kind: 'AuthorizedAgent', confidence: 1.0, badges: [DETECTION_DISPLAY_LABELS.isAuthorizedAgent] }
   }
 
   const badges: string[] = []
@@ -48,7 +51,7 @@ export function deriveVerdict(detections: Detections): Verdict {
     if (key === 'isAuthorizedAgent' || !result.detected) continue
     const weight = WEIGHTS[key][result.severity]
     confidence = 1 - (1 - confidence) * (1 - weight)
-    badges.push(`${LABELS[key]} (${result.severity})`)
+    badges.push(`${DETECTION_DISPLAY_LABELS[key]} (${result.severity})`)
   }
 
   if (badges.length === 0) {

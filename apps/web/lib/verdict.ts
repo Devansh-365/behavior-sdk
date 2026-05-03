@@ -1,4 +1,5 @@
 import type { BehaviorPayload, Detections } from "@devanshhq/nyasa";
+import { DETECTION_DISPLAY_LABELS } from "@devanshhq/nyasa";
 
 export type VerdictKind = 'analyzing' | 'human' | 'headless' | 'scripted' | 'llm' | 'multiple'
 
@@ -13,15 +14,6 @@ export interface Verdict {
   reasons: string[]               // flat list, prefixed with rule name
 }
 
-const RULE_LABEL: Record<keyof Detections, string> = {
-  isHeadless:         'Headless browser',
-  isScripted:         'Scripted bot',
-  isLLMAgent:         'LLM agent',
-  isAuthorizedAgent:  'Authorized agent signature',
-  isUploadAutomation: 'Upload automation',
-  isMultimodalBot:    'Multimodal bot',
-}
-
 const SUBKIND_FOR: Record<keyof Detections, Exclude<VerdictKind, 'analyzing' | 'human' | 'multiple'>> = {
   isHeadless:         'headless',
   isScripted:         'scripted',
@@ -34,9 +26,9 @@ const SUBKIND_FOR: Record<keyof Detections, Exclude<VerdictKind, 'analyzing' | '
 const SHORT_LABEL: Record<VerdictKind, string> = {
   analyzing: 'Awaiting input',
   human: 'Human',
-  headless: 'Headless browser',
-  scripted: 'Scripted bot',
-  llm: 'LLM agent',
+  headless: DETECTION_DISPLAY_LABELS.isHeadless,
+  scripted: DETECTION_DISPLAY_LABELS.isScripted,
+  llm: DETECTION_DISPLAY_LABELS.isLLMAgent,
   multiple: 'Bot — multiple signals',
 }
 
@@ -59,7 +51,7 @@ export function computeVerdict(payload: BehaviorPayload | null): Verdict {
 
   const reasons = (Object.entries(detections) as Array<[keyof Detections, Detections[keyof Detections]]>)
     .filter(([, r]) => r.detected)
-    .flatMap(([k, r]) => r.reasons.map((reason) => `${RULE_LABEL[k]}: ${reason}`))
+    .flatMap(([k, r]) => r.reasons.map((reason) => `${DETECTION_DISPLAY_LABELS[k]}: ${reason}`))
 
   const hasInput =
     signals.behavioral.keystroke.dwells.length > 0 ||

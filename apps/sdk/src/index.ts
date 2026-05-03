@@ -62,6 +62,7 @@ export function collect(
 }
 
 export { BehaviorScanner }
+export { DETECTION_DISPLAY_LABELS } from './scoring'
 
 // Named type exports for TypeScript consumers
 export type {

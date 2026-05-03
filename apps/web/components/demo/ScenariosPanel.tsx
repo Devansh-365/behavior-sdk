@@ -43,8 +43,8 @@ const SCENARIOS = [
     blurb: 'dispatchEvent + programmatic file attach',
     icon: Ghost,
     accent:
-      'hover:border-violet-500/35 hover:bg-violet-500/5 dark:hover:border-violet-500/40',
-    tag: 'text-violet-700 dark:text-violet-400',
+      'hover:border-sky-500/35 hover:bg-sky-500/5 dark:hover:border-sky-500/40',
+    tag: 'text-sky-800 dark:text-sky-300',
   },
 ] as const
 
@@ -77,7 +77,7 @@ export function ScenariosPanel({
           detections in real time.
         </p>
       </div>
-      <div className="grid gap-2">
+      <div className="grid gap-2 sm:grid-cols-2 sm:gap-2.5">
         {SCENARIOS.map((s) => {
           const Icon = s.icon
           const isRunning = running === s.id

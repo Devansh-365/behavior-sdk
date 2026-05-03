@@ -3,9 +3,16 @@
 import type { ReactElement } from 'react'
 import { AlertTriangle, Fingerprint } from 'lucide-react'
 import type { FingerprintSignals } from "@devanshhq/nyasa";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion'
 
 interface FingerprintCardProps {
   fingerprint: FingerprintSignals | null
+  embedded?: boolean
 }
 
 function Pill({ label, on }: { label: string; on: boolean }): ReactElement {
@@ -31,6 +38,7 @@ function truncate(s: string, n: number): string {
 
 export function FingerprintCard({
   fingerprint,
+  embedded = false,
 }: FingerprintCardProps): ReactElement {
   const fp = fingerprint
   const w = fp?.webdriver
@@ -45,17 +53,19 @@ export function FingerprintCard({
   const llvmpipe = (g?.renderer ?? '').toLowerCase().includes('llvmpipe')
   const tzMismatch = tz ? !tz.consistent : false
 
-  return (
-    <section className="border-border bg-card rounded-xl border p-5 shadow-sm">
-      <div className="mb-3 flex items-center justify-between gap-2">
-        <h3 className="text-foreground flex items-center gap-2 text-sm font-semibold">
-          <Fingerprint className="text-primary size-3.5 shrink-0" aria-hidden />
-          Fingerprint
-        </h3>
-        <span className="text-muted-foreground font-mono text-[10px] uppercase tracking-wider">
-          cached
-        </span>
-      </div>
+  const inner = (
+    <>
+      {!embedded && (
+        <div className="mb-3 flex items-center justify-between gap-2">
+          <h3 className="text-foreground flex items-center gap-2 text-sm font-semibold">
+            <Fingerprint className="text-primary size-3.5 shrink-0" aria-hidden />
+            Fingerprint
+          </h3>
+          <span className="text-muted-foreground font-mono text-[10px] tracking-wide">
+            cached
+          </span>
+        </div>
+      )}
       <div className="flex flex-wrap gap-2">
         <Pill label="navigator.webdriver" on={!!w?.webdriver} />
         <Pill label="CDP" on={!!w?.cdpPresent} />
@@ -70,7 +80,13 @@ export function FingerprintCard({
         <Pill label="tz mismatch" on={tzMismatch} />
         <Pill label="new device" on={dev?.isNew === true} />
       </div>
-      <div className="border-border mt-4 space-y-1.5 border-t pt-3">
+      <Accordion type="single" collapsible defaultValue="details" className="mt-4 w-full">
+        <AccordionItem value="details" className="border-border border-t">
+          <AccordionTrigger className="py-3 text-[13px] hover:no-underline">
+            Device and surface details
+          </AccordionTrigger>
+          <AccordionContent>
+            <div className="border-border space-y-1.5 rounded-lg border bg-muted/15 px-3 py-2.5 dark:bg-muted/10">
         <div className="flex items-start justify-between gap-3 text-xs">
           <span className="text-muted-foreground">WebGL renderer</span>
           <span className="text-foreground text-right font-mono">
@@ -141,7 +157,24 @@ export function FingerprintCard({
               : '—'}
           </span>
         </div>
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
+    </>
+  )
+
+  if (embedded) {
+    return (
+      <div className="px-4 py-5 sm:px-5 sm:py-6">
+        {inner}
       </div>
+    )
+  }
+
+  return (
+    <section className="border-border bg-card rounded-2xl border p-5 shadow-sm ring-1 ring-black/[0.04] dark:ring-white/[0.06] sm:p-6">
+      {inner}
     </section>
   )
 }

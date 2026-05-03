@@ -1,28 +1,42 @@
 'use client'
 
 import type { ReactElement } from 'react'
-import { Shield, ShieldAlert } from 'lucide-react'
-import type { Detections, DetectionResult } from "@devanshhq/nyasa";
+import { useState } from 'react'
+import { Code2, Shield, ShieldAlert } from 'lucide-react'
+import {
+  DETECTION_DISPLAY_LABELS,
+  type Detections,
+  type DetectionResult,
+} from "@devanshhq/nyasa";
 
 interface DetectionsCardProps {
   detections: Detections | null
 }
 
-const RULES: Array<{ key: keyof Detections; label: string; blurb: string }> = [
-  { key: 'isHeadless', label: 'isHeadless', blurb: 'Headless browser markers' },
-  { key: 'isScripted', label: 'isScripted', blurb: 'Mechanical input pattern' },
-  { key: 'isLLMAgent', label: 'isLLMAgent', blurb: 'LLM-style paste-and-go' },
-  {
-    key: 'isUploadAutomation',
-    label: 'isUploadAutomation',
-    blurb: 'Programmatic file attachment or AI-generated doc',
-  },
-  {
-    key: 'isMultimodalBot',
-    label: 'isMultimodalBot',
-    blurb: 'Cross-signal behavioral incoherence',
-  },
+/** Same order as `Detections` in the SDK payload. */
+const RULE_KEYS: Array<keyof Detections> = [
+  'isHeadless',
+  'isScripted',
+  'isLLMAgent',
+  'isAuthorizedAgent',
+  'isUploadAutomation',
+  'isMultimodalBot',
 ]
+
+const RULE_BLURBS: Record<keyof Detections, string> = {
+  isHeadless:
+    'WebDriver/CDP markers, iframe mismatch, software WebGL renderer',
+  isScripted:
+    'Uniform keystrokes, missing pointer activity, scripted input events',
+  isLLMAgent:
+    'Paste-heavy flow, machine-speed bursts, center-precise clicks, LLM rhythm',
+  isAuthorizedAgent:
+    'Cryptographic agent attestation when implemented (HTTP message signatures)',
+  isUploadAutomation:
+    'Programmatic file attach or doc metadata hints (EXIF / synthetic tooling)',
+  isMultimodalBot:
+    'Conflicting behavioral channels (e.g. natural mouse vs pixel-perfect clicks)',
+}
 
 function severityClass(severity: DetectionResult['severity']): string {
   switch (severity) {
@@ -36,13 +50,17 @@ function severityClass(severity: DetectionResult['severity']): string {
 }
 
 function DetectionRow({
-  label,
+  ruleKey,
+  title,
   blurb,
   result,
+  showPayloadKeys,
 }: {
-  label: string
+  ruleKey: keyof Detections
+  title: string
   blurb: string
   result: DetectionResult | undefined
+  showPayloadKeys: boolean
 }): ReactElement {
   const fired = result?.detected ?? false
   return (
@@ -64,8 +82,13 @@ function DetectionRow({
             aria-hidden
           />
           <div>
-            <div className="text-foreground font-mono text-sm">{label}</div>
-            <div className="text-muted-foreground text-xs">{blurb}</div>
+            <div className="text-foreground text-sm font-medium">{title}</div>
+            {showPayloadKeys ? (
+              <div className="text-muted-foreground font-mono text-[10px] tracking-tight">
+                {ruleKey}
+              </div>
+            ) : null}
+            <div className="text-muted-foreground mt-0.5 text-xs">{blurb}</div>
           </div>
         </div>
         <span
@@ -100,6 +123,7 @@ function DetectionRow({
 export function DetectionsCard({
   detections,
 }: DetectionsCardProps): ReactElement {
+  const [showPayloadKeys, setShowPayloadKeys] = useState(false)
   const anyFired = detections
     ? Object.values(detections).some((r) => r.detected)
     : false
@@ -109,23 +133,48 @@ export function DetectionsCard({
     : 'text-emerald-600 dark:text-emerald-400'
 
   return (
-    <section className="border-border bg-card rounded-xl border p-5 shadow-sm">
-      <div className="mb-3 flex items-center justify-between gap-2">
+    <section className="border-border bg-card overflow-hidden rounded-2xl border p-5 shadow-sm ring-1 ring-black/[0.04] dark:ring-white/[0.06] sm:p-6">
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
         <h3 className="text-foreground flex items-center gap-2 text-sm font-semibold">
           <Icon className={`size-3.5 shrink-0 ${iconColor}`} aria-hidden />
           Detections
         </h3>
-        <span className="text-muted-foreground font-mono text-[10px] uppercase tracking-wider">
-          {anyFired ? 'fired' : 'all clear'}
-        </span>
+        <div className="flex flex-wrap items-center justify-end gap-2 sm:gap-3">
+          <button
+            type="button"
+            className={`focus-visible:ring-ring inline-flex cursor-pointer items-center gap-1.5 rounded-md border px-2 py-1 text-[11px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
+              showPayloadKeys
+                ? 'text-foreground border-border bg-muted/60'
+                : 'text-muted-foreground hover:text-foreground border-transparent hover:border-border hover:bg-muted/50'
+            }`}
+            aria-pressed={showPayloadKeys}
+            aria-expanded={showPayloadKeys}
+            aria-label={
+              showPayloadKeys
+                ? 'Hide JSON payload field names for each rule'
+                : 'Show JSON payload field names (e.g. isHeadless) for integrators'
+            }
+            onClick={() => {
+              setShowPayloadKeys((v) => !v)
+            }}
+          >
+            <Code2 className="size-3.5 shrink-0 opacity-80" aria-hidden />
+            <span>Payload keys</span>
+          </button>
+          <span className="text-muted-foreground font-mono text-[10px] uppercase tracking-wider">
+            {anyFired ? 'fired' : 'all clear'}
+          </span>
+        </div>
       </div>
       <div className="space-y-2">
-        {RULES.map((r) => (
+        {RULE_KEYS.map((key) => (
           <DetectionRow
-            key={r.key}
-            label={r.label}
-            blurb={r.blurb}
-            result={detections?.[r.key]}
+            key={key}
+            ruleKey={key}
+            title={DETECTION_DISPLAY_LABELS[key]}
+            blurb={RULE_BLURBS[key]}
+            result={detections?.[key]}
+            showPayloadKeys={showPayloadKeys}
           />
         ))}
       </div>
