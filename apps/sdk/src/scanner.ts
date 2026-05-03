@@ -220,13 +220,16 @@ export class BehaviorScanner {
   #runDetections(signals: CollectedSignals): Detections {
     const sessionMeta = { elapsedMs: performance.now() - this.#startedAt }
     const features = extractFeatures(signals)
+    // isScripted and isLLMAgent run first so isMultimodalBot can compose their near-miss results.
+    const isScripted = detectScripted(signals, features)
+    const isLLMAgent = detectLLMAgent(signals, sessionMeta, features)
     return {
       isHeadless:         detectHeadless(signals),
-      isScripted:         detectScripted(signals, features),
-      isLLMAgent:         detectLLMAgent(signals, sessionMeta, features),
+      isScripted,
+      isLLMAgent,
       isAuthorizedAgent:  detectAuthorizedAgent(signals),
       isUploadAutomation: detectUploadAutomation(signals),
-      isMultimodalBot:    detectMultimodalBot(signals, features),
+      isMultimodalBot:    detectMultimodalBot(signals, features, isScripted, isLLMAgent),
     }
   }
 }
