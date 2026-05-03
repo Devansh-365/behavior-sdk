@@ -51,6 +51,7 @@ import { detectLLMAgent }            from './detections/isLLMAgent'
 import { detectAuthorizedAgent }      from './detections/isAuthorizedAgent'
 import { detectUploadAutomation }    from './detections/isUploadAutomation'
 import { detectMultimodalBot }       from './detections/isMultimodalBot'
+import { deriveVerdict }             from './scoring'
 
 import type {
   Collector,
@@ -71,7 +72,6 @@ import type {
   FingerprintSignals,
   Detections,
   BehaviorPayload,
-  Verdict,
 } from './types'
 
 /**
@@ -139,7 +139,7 @@ export class BehaviorScanner {
     if (!this.#collectors) throw new Error('[nyasa] call attach() before buildPayload()')
     const signals = this.#collectSignals()
     const detections = this.#runDetections(signals)
-    const verdict = this.#deriveVerdict(detections)
+    const verdict = deriveVerdict(detections)
     return { sessionId, collectedAt: new Date().toISOString(), signals, detections, verdict }
   }
 
@@ -167,43 +167,6 @@ export class BehaviorScanner {
   // ---------------------------------------------------------------------------
   // Private
   // ---------------------------------------------------------------------------
-
-  /**
-   * Derives a simple, deterministic client-side classification from current
-   * detections. Strategy 2026 Wedge: Prioritize Authorized AI, then categorize
-   * all others as Human or Unauthorized Bot based on behavioral markers.
-   */
-  #deriveVerdict(detections: Detections): Verdict {
-    const badges: string[] = [];
-    
-    // Wedge: Authorized Agents have validated identity, bypassing behavior rules
-    if (detections.isAuthorizedAgent.detected) {
-      return { kind: 'AuthorizedAgent', confidence: 1.0, badges: ['Valid-Identity'] };
-    }
-
-    // High severity detections often indicate undeniable bot/headless presence
-    if (detections.isHeadless.detected && detections.isHeadless.severity === 'high') {
-      badges.push('CDP-Markers');
-    }
-    
-    // Collect badges from detections to provide some feedback context
-    Object.entries(detections).forEach(([key, res]) => {
-      if (res.detected && key !== 'isAuthorizedAgent') {
-        // Simple heuristic: map detection names to badge labels
-        const label = key.replace('is', '').replace(/([A-Z])/g, '-$1').replace(/^-/, '');
-        badges.push(`${label} (${res.severity})`);
-      }
-    });
-
-    if (badges.length > 0) {
-      // Crude confidence calculation for now: fewer high severity = higher confidence it's a bot?
-      // No, that's wrong. Let's make it simpler.
-      return { kind: 'UnauthorizedBot', confidence: 0.8, badges: [...new Set(badges)] };
-    }
-
-    // Default assume human if no bot markers detected
-    return { kind: 'Human', confidence: 1.0, badges: [] };
-  }
 
   #collectSignals(): CollectedSignals {
     const c = this.#collectors!  // guarded by buildPayload() check above
