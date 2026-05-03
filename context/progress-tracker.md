@@ -2,92 +2,95 @@
 
 ## Current phase
 
-**SDK v0.6 — incognito detection and timezone/locale consistency.**
+**SDK v0.7+ — full behavioral + fingerprint + network stack with client verdict.**
 
-The SDK now collects 13 behavioral + 7 fingerprint + 3 network signals. Added: incognito mode detection (Chrome/Edge quota cap + Safari IndexedDB probe, prewarmed async pattern), and timezone vs locale region consistency check (IANA timezone prefix vs `navigator.language` country code region matching — flags when both sides are known and differ). Detection rules unchanged at 5. `FingerprintCard` in the demo updated with new pills and detail rows for both signals.
+The SDK collects **13 behavioral**, **8 fingerprint**, and **3 network** signals. **`BehaviorScanner.buildPayload()`** returns **`BehaviorPayload`**: raw **`signals`**, per-rule **`detections`**, and **`verdict`** from **`deriveVerdict()`** (noisy-OR over fired rules; **`AuthorizedAgent`** short-circuit when a valid-format signature is present). Demo (**`/demo`**) uses **`DemoTelemetryPanel`**, **`SignalsCard`**, **`FingerprintCard`**, **`NetworkCard`**, **`VerdictCard`**, **`DetectionsCard`**, and **`PayloadViewer`**.
 
 ---
 
 ## Completed
 
 ### Foundations
-- [x] Signal taxonomy (`apps/sdk/src/types.ts`)
-- [x] `BehaviorScanner` orchestrator — two-phase evaluation (collect → detect)
-- [x] Public `collect()` entry returning `{ stop, flush }` (SPA-friendly)
-- [x] ESM + IIFE bundles (`window.BehaviorSDK` global)
-- [x] `computeVariance` in `apps/sdk/src/utils.ts`
-- [x] tsup + tsc build pipeline, zero errors
-- [x] npm-workspaces monorepo (`apps/sdk/` + `apps/web/`)
+
+- [x] Signal taxonomy (`apps/sdk/src/types.ts`) — `BehavioralSignals`, `FingerprintSignals`, `NetworkSignals`, `BehaviorPayload`, `Verdict`
+- [x] `BehaviorScanner` — collect → `extractFeatures` → detect → `deriveVerdict`
+- [x] Public **`collect()`** — **`string | HTMLElement`** mount, **`{ stop, flush }`**; default flush on **nearest `<form>` submit** (if any) + **`visibilitychange` → hidden** (SPA / no-form flows use **`flush()`**)
+- [x] ESM + IIFE (`window.BehaviorSDK`) via **tsup**
+- [x] **`computeVariance`** in **`utils.ts`**; **`extractFeatures`** in **`features.ts`**
+- [x] npm workspaces: **`apps/sdk`** + **`apps/web`**
 
 ### Behavioral collectors (13)
-- [x] `keystroke.ts` — dwells + flights arrays
-- [x] `mouse.ts` — path + curvature + **stillnessRatio** (fraction of consecutive samples with < 2px movement)
-- [x] `touch.ts` — touchstart / touchend / touchmove counts
-- [x] `correction.ts` — Backspace + Delete, `correctionRatio`
-- [x] `paste.ts` — `pasteRatio = pastedChars / totalChars`
-- [x] `scroll.ts` — depths + timestamps
-- [x] `input-type.ts` — `InputEvent.inputType` → typed / pasted / dropped / deleted / programmatic
-- [x] `upload.ts` — picker vs drag-drop vs programmatic; **EXIF analysis** per picked file (AI-generated flag, software tag, missing metadata)
-- [x] `visibility.ts` — hiddenCount, blurCount, totalHiddenMs (tab switching)
-- [x] `click.ts` — centerOffsets (dx/dy from element bounding box center), targeted count
-- [x] `session-rhythm.ts` — eventGaps, maxGapMs, burstCount, meanBurstGapMs, gapVariance
-- [x] `field-timing.ts` — per-field dwell times, **instantFills** (fields filled in <100ms = LLM batch-fill)
-- [x] `exif.ts` — zero-dependency JPEG/PDF/PNG metadata parser (utility used by upload.ts)
 
-### Fingerprint collectors (7)
-- [x] `webdriver.ts` — `navigator.webdriver`, CDP, Playwright markers
-- [x] `iframe.ts` — parent vs iframe plugin count consistency
-- [x] `canvas.ts` — canvas data URL hash
-- [x] `webgl.ts` — GPU vendor + renderer (SwiftShader / LLVMpipe = headless)
-- [x] `audio.ts` — OfflineAudioContext render hash, prewarmed on attach
-- [x] `incognito.ts` — storage quota cap (Chrome/Edge) + IndexedDB probe (Safari), prewarmed on attach
-- [x] `timezone.ts` — IANA timezone region vs `navigator.language` country region consistency
+- [x] `keystroke.ts` — dwells, flights
+- [x] `mouse.ts` — pathLength, curvature, **stillnessRatio**
+- [x] `touch.ts` — touch counts, path length
+- [x] `correction.ts` — backspace/delete, **correctionRatio**
+- [x] `paste.ts` — **pasteRatio**, counts, charCount
+- [x] `scroll.ts` — depths, timestamps
+- [x] `input-type.ts` — typed / pasted / dropped / deleted / **programmatic**
+- [x] `upload.ts` — picker vs drag-drop vs programmatic; **`exifResults`** per picked file
+- [x] `exif.ts` — JPEG/PDF/PNG metadata helper for **`upload`**
+- [x] `visibility.ts` — hidden/blur counts, **totalHiddenMs**
+- [x] `click.ts` — **centerOffsets**, **targeted** (interactive hits)
+- [x] `session-rhythm.ts` — gaps, bursts, **gapVariance**
+- [x] `field-timing.ts` — per-field dwells, **instantFills** (<100ms)
 
-### Network collectors (3)
-- [x] `reaction.ts` — focus → first input delay; `minInputDelay`; **`engagementDelayMs`** (attach → first focusin)
-- [x] `connection.ts` — `navigator.connection` snapshot (effectiveType, rtt, downlink, saveData)
-- [x] `timing.ts` — Navigation Timing: DNS / TCP / TLS / TTFB / domLoad
+### Fingerprint signals (8)
 
-### Detection rules (5)
-- [x] `isHeadless` — 6 signals (webdriver, CDP, Playwright, iframe, WebGL SwiftShader/LLVMpipe, audio)
-- [x] `isScripted` — 8 signals (no-pointer mobile-aware, curvature variance, dwell var, flight var, paste ratio, zero corrections, reaction < 50ms, programmatic input > 5)
-- [x] `isLLMAgent` — 8 signals (paste ratio, no-scroll-with-input, fast completion, machine-speed burst, uniform flight variance, mouse stillness > 70%, click precision < 3px offset, burst-pause-burst session rhythm, **instant field fills ≥ 2**)
-- [x] `isUploadAutomation` — programmatic file attachment + **AI-generated document flag** (EXIF Software match) + JPEG with no EXIF block
-- [x] `isMultimodalBot` — 4 cross-signal incoherence checks (natural mouse + precise clicks, typing + zero corrections + zero scroll, keyboard with no pointer, organic rhythm + instant field fills)
+- [x] `webdriver.ts` — navigator.webdriver, CDP, Playwright markers
+- [x] `iframe.ts` — parent vs iframe plugin consistency
+- [x] `canvas.ts` — data URL hash
+- [x] `webgl.ts` — vendor/renderer (SwiftShader / LLVMpipe cues)
+- [x] `audio.ts` — OfflineAudioContext hash; **prewarm** on attach
+- [x] `incognito.ts` — quota / IndexedDB-style probes; **prewarm** on attach
+- [x] `timezone.ts` — IANA vs **navigator.language** region consistency
+- [x] `device-persistence.ts` — **deviceId** (localStorage), **isNew**
+
+### Network (3)
+
+- [x] `reaction.ts` — firstInputDelay, minInputDelay, **engagementDelayMs**
+- [x] `connection.ts` — **navigator.connection** snapshot
+- [x] `timing.ts` — Navigation Timing breakdown
+
+### Detection rules (6)
+
+- [x] `isHeadless.ts` — automation / software-renderer / iframe cues (severity scales with reason count)
+- [x] `isScripted.ts` — multi-signal scripted / bot typing patterns (uses **`ExtractedFeatures`**)
+- [x] `isLLMAgent.ts` — paste, scroll, timing, rhythm, clicks, instant fills, etc. (**`SessionMeta`**, **`ExtractedFeatures`**)
+- [x] `isAuthorizedAgent.ts` — **`__nyasaAgentSignature`** or **`meta[name=x-agent-signature]`** (format check only; **server validates** crypto)
+- [x] `isUploadAutomation.ts` — programmatic files + EXIF cues
+- [x] `isMultimodalBot.ts` — cross-signal inconsistency + **near-miss** on scripted+LLM (wired after the two rules above)
+
+### Client scoring
+
+- [x] `scoring.ts` — **`deriveVerdict`**, **`WEIGHTS`**, **`DETECTION_DISPLAY_LABELS`**
 
 ### Web demo (`apps/web`)
-- [x] Next.js + Tailwind v4 + lucide-react
-- [x] `VerdictCard` — hero verdict: Human / Scripted Bot / LLM Agent / Headless / Multi-signal
-- [x] `SignalsCard` — live behavioral readout (keystroke, pointer, paste, corrections, input origin, file upload)
-- [x] `DetectionsCard` — all 4 rules with severity badges + red-pulse animation on first fire
-- [x] `FingerprintCard` — WebGL renderer, audio hash, headless pills
-- [x] `NetworkCard` — reaction time, connection class, navigation timing breakdown
-- [x] `PayloadViewer` — collapsible JSON + copy-to-clipboard
-- [x] `ScenariosPanel` — 4 synthetic scenarios
-- [x] Scenarios: Human (organic mouse, variable timing, Backspace corrections), Scripted Bot (uniform 50ms, no mouse), LLM Agent (paste chunks, brief mouse, no scroll), Stealth Bot (programmatic input + programmatic file attach)
-- [x] `npm run web` — Next.js dev (HMR for web; SDK changes need rebuild or path alias in tsconfig)
-- [x] Vercel: `build:vercel` builds `@devanshhq/nyasa` then `web`
+
+- [x] Next.js + Tailwind v4 + shared UI primitives
+- [x] **`DemoApp`**, **`DemoForm`**, **`DemoTelemetryPanel`** (Behavior / Environment tabs)
+- [x] **`VerdictCard`**, **`DetectionsCard`**, **`SignalsCard`**, **`FingerprintCard`**, **`NetworkCard`**, **`PayloadViewer`**, **`ScenariosPanel`**
 
 ---
 
 ## Open questions
 
 | Question | Why it matters | Who resolves |
-|----------|---------------|-------------|
-| Which surface is the SDK running on first? (onboarding, login, KYB, money movement?) | Determines which signal thresholds need tuning first | Founder |
-| What is the scoring API endpoint + auth scheme? | Needed to test full flush → score → response round-trip | Engineering |
-| Should detection thresholds be configurable per customer? | Currently hardcoded — fine for prototype, changes for production | Founder |
+|----------|----------------|--------------|
+| Which surface ships first? (signup, login, KYB, payments?) | Threshold tuning priority | Product |
+| Scoring API URL, auth, and **payload schema version** | End-to-end testing and evolution | Engineering |
+| Per-tenant configurable thresholds? | Today largely hardcoded in detectors | Product + eng |
 
 ---
 
-## Next up
+## Next up (from roadmap / ideas)
 
-Remaining low-priority items from `specs/02-future-roadmap.md` (all WAIT/SKIP from research evaluation):
+See **`specs/02-future-roadmap.md`** or similar for prioritized ideas. Examples often discussed:
 
-1. **CSS pointer type** — `fingerprint/pointerType.ts` (20 min) — UA vs pointer-media-query consistency check.
-2. **Idle gap analysis** — computed from existing scroll + keystroke timestamps (~30 min, no new collector).
-3. **Media device count** — `fingerprint/mediaDevices.ts` (~30 min) — 0 cameras + 0 mics on a claimed desktop = headless signal.
-4. **Native API integrity** — `fingerprint/nativeIntegrity.ts` (1 hour) — WAIT; catches unsophisticated bots only, Camoufox/Patchright immune.
-5. **Fingerprint consistency cross-check** — `detections/isFingerprintInconsistent.ts` (tier 2) — combines pointer type, media devices, webgl, canvas to detect spoofing.
+1. **CSS / pointer media** consistency fingerprint.
+2. **Idle gap** analysis from existing timestamps.
+3. **`mediaDevices` count** fingerprint.
+4. **Test harness** (unit tests for **`extractFeatures`** + each **`detect*`** with fixtures).
+5. **Registry-based** collector attachment to reduce **`scanner.ts`** churn.
 
-Demo: update scenarios to exercise `isMultimodalBot` and per-field timing signals in the synthetic runs.
+Demo: extend scenarios to stress **`isMultimodalBot`** and rare paths as needed.

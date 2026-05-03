@@ -2,36 +2,35 @@
 
 ## Approach
 
-Build incrementally, one unit at a time per `specs/00-build-plan.md`. The context files define what to build and how — do not invent behavior not described here.
+Build incrementally. **`context/`** plus **`specs/`** describe intent and structure — avoid inventing behavior that contradicts them without updating the docs in the same change.
 
 ## Scoping rules
 
-- One file per change where possible. Adding a new signal = one new file in `src/signals/`, one entry in `src/types.ts`, one update to `src/scanner.ts`.
-- Do not add a new detection rule and a new signal collector in the same step — they are separate concerns.
-- Do not mix SDK code (`src/`) with any future server-side code (`services/`) in one step.
+- Prefer **one focused concern** per step (e.g. new collector + `types.ts` + `scanner.ts` wiring, without also retuning unrelated detectors).
+- **Avoid** mixing **`apps/sdk/`** and any future **`services/`** closed code in a single PR/step.
+- **`apps/web/`** demo changes can ship with SDK changes when they only **surface** new signals or fix consumption; keep scoring **logic** in **`apps/sdk/`**.
 
 ## When to split
 
 Split a task if it:
-- Touches both `src/types.ts` and more than two other files (type changes cascade — verify separately).
-- Adds a new detection rule AND changes an existing one.
-- Changes the `ZovenPayload` shape (breaking change for the scoring API contract).
+
+- Touches **`types.ts`** **and** many dependents — land types first or in a dedicated PR.
+- Changes **multiple detection rules** with different review risk — isolate each rule.
+- Changes **`BehaviorPayload`** or other **wire contracts** — treat as a breaking/API step: document version impact.
 
 ## Handling ambiguity
 
-- If a signal's collection method is unclear, add an open question to `context/progress-tracker.md` and implement a placeholder that returns empty arrays. Do not guess.
-- If a detection rule threshold (e.g. `pasteRatio > 0.8`) needs tuning, mark it with a `// tunable:` comment and add it to progress-tracker open questions.
+- If collection semantics are unclear, add an **Open question** to **`context/progress-tracker.md`** and prefer a **safe default** (empty arrays, `supported: false`) over silent guesses.
+- If a threshold needs product calibration, add **`// tunable:`** near the constant and note it in **`progress-tracker.md`**.
 
-## Protected files
+## Protected / high-blast-radius files
 
-Do not modify without explicit instruction:
-- `src/types.ts` — changes cascade to every file; update architecture.md first.
-- `dist/` — generated output, never hand-edited.
-- `tsconfig.json` — changes affect the entire type system; discuss first.
+- **`apps/sdk/src/types.ts`** — cascades everywhere; review carefully.
+- **`apps/sdk/dist/`** — generated; never edit by hand.
+- **Root / workspace `tsconfig`** — discuss before relaxing **`strict`**.
 
-## Before moving to the next unit
+## Before considering a unit done
 
-1. `npm run typecheck` passes with zero errors.
-2. `npm run build` succeeds and bundle size is under 15KB.
-3. The unit's acceptance criteria from `specs/00-build-plan.md` are met.
-4. `context/progress-tracker.md` is updated.
+1. **`npm run typecheck`** — zero errors.
+2. **`npm run build`** for the SDK when **`src/`** changed — succeeds; spot-check bundle size if the change is large.
+3. **`context/progress-tracker.md`** — update **Current phase** / **Completed** when shipping meaningful SDK or demo milestones.

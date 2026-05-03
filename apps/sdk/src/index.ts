@@ -1,19 +1,25 @@
 /**
  * Behavior Analysis SDK — public entry point.
  *
- * Embeds into any web form with one call. Attaches signal collectors,
- * auto-flushes on submit or tab close, and sends the scored payload to
- * the scoring API via sendBeacon (non-blocking, survives page unload).
+ * Embeds into a **customer page** with one call. Pass a **CSS selector or HTMLElement**
+ * as the **mount** (commonly a `<form>` or any container wrapping inputs — modals,
+ * wizard steps, chat UIs). The scanner attaches subtree-oriented collectors to that
+ * mount and page-wide collectors (e.g. pointer on `document`) where needed.
+ *
+ * Auto-flush: **submit** on `mount.closest('form') ?? mount`, plus **tab hidden**
+ * (`visibilitychange`). If there is no `<form>` ancestor, **submit will not fire** —
+ * call **`handle.flush()`** from your app (SPA navigation, wizard Next, etc.).
+ * Payload is sent via **sendBeacon** (non-blocking, survives page unload).
  *
  * ESM usage (bundler):
  *   import { collect } from '@devanshhq/nyasa'
- *   const handle = collect('#signup-form', { endpoint: '/score', sessionId: crypto.randomUUID() })
+ *   const handle = collect('#signup', { endpoint: '/score', sessionId: crypto.randomUUID() })
  *   // SPA shutdown: handle.flush()  (manual send + detach)
  *   // Or just: handle.stop()        (detach without sending)
  *
  * IIFE usage (script tag):
  *   <script src="index.global.js"></script>
- *   <script>BehaviorSDK.collect('#signup-form', { endpoint: '/score', sessionId: '...' })</script>
+ *   <script>BehaviorSDK.collect('#signup', { endpoint: '/score', sessionId: '...' })</script>
  */
 
 import { BehaviorScanner } from './scanner'
