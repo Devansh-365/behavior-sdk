@@ -1,6 +1,6 @@
 {
   "name": "@devanshhq/nyasa",
-  "version": "0.1.0",
+  "version": "0.2.1",
   "publishConfig": {
     "access": "public"
   },
@@ -15,7 +15,9 @@
       "types": "./dist/index.d.ts"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsup",
     "typecheck": "tsc --noEmit",
