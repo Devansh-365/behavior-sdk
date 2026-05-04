@@ -1,0 +1,1026 @@
+{
+  "timestamp": "2026-05-04T23:08:14.071Z",
+  "scenarios": [
+    {
+      "id": "human-natural",
+      "actorType": "Human",
+      "expectedVerdict": "Human",
+      "actualVerdict": "Bot — multiple signals",
+      "firedRules": [
+        "isHeadless",
+        "isMultimodalBot"
+      ],
+      "expectedRules": [],
+      "passed": false,
+      "isCalibration": false,
+      "capturedPayload": {
+        "verdictKind": "Bot — multiple signals",
+        "confidence": 95,
+        "badges": [
+          "Headless Browser: WebGL using SwiftShader software renderer (typical of headless Chrome)",
+          "Multimodal Bot: near-miss: scripted (1 signal) + LLM agent (1 signal) — neither rule fired alone",
+          "Multimodal Bot: natural mouse curve (var 2.901) with pixel-precise clicks (0.4px mean offset) — mouse events injected"
+        ],
+        "detections": {
+          "isHeadless": {
+            "detected": true,
+            "severity": "medium",
+            "reasons": [
+              "WebGL using SwiftShader software renderer (typical of headless Chrome)"
+            ]
+          },
+          "isScripted": {
+            "detected": false,
+            "severity": "none",
+            "reasons": []
+          },
+          "isLLMAgent": {
+            "detected": false,
+            "severity": "none",
+            "reasons": []
+          },
+          "isAuthorizedAgent": {
+            "detected": false,
+            "severity": "none",
+            "reasons": []
+          },
+          "isUploadAutomation": {
+            "detected": false,
+            "severity": "none",
+            "reasons": []
+          },
+          "isMultimodalBot": {
+            "detected": true,
+            "severity": "high",
+            "reasons": [
+              "near-miss: scripted (1 signal) + LLM agent (1 signal) — neither rule fired alone",
+              "natural mouse curve (var 2.901) with pixel-precise clicks (0.4px mean offset) — mouse events injected"
+            ]
+          }
+        },
+        "isHeadlessExpected": false
+      }
+    },
+    {
+      "id": "human-fast-typist",
+      "actorType": "Human",
+      "expectedVerdict": "Human",
+      "actualVerdict": "Bot — multiple signals",
+      "firedRules": [
+        "isHeadless",
+        "isMultimodalBot"
+      ],
+      "expectedRules": [],
+      "passed": false,
+      "isCalibration": false,
+      "capturedPayload": {
+        "verdictKind": "Bot — multiple signals",
+        "confidence": 95,
+        "badges": [
+          "Headless Browser: WebGL using SwiftShader software renderer (typical of headless Chrome)",
+          "Multimodal Bot: near-miss: scripted (1 signal) + LLM agent (1 signal) — neither rule fired alone",
+          "Multimodal Bot: natural mouse curve (var 1.634) with pixel-precise clicks (0.4px mean offset) — mouse events injected"
+        ],
+        "detections": {
+          "isHeadless": {
+            "detected": true,
+            "severity": "medium",
+            "reasons": [
+              "WebGL using SwiftShader software renderer (typical of headless Chrome)"
+            ]
+          },
+          "isScripted": {
+            "detected": false,
+            "severity": "none",
+            "reasons": []
+          },
+          "isLLMAgent": {
+            "detected": false,
+            "severity": "none",
+            "reasons": []
+          },
+          "isAuthorizedAgent": {
+            "detected": false,
+            "severity": "none",
+            "reasons": []
+          },
+          "isUploadAutomation": {
+            "detected": false,
+            "severity": "none",
+            "reasons": []
+          },
+          "isMultimodalBot": {
+            "detected": true,
+            "severity": "high",
+            "reasons": [
+              "near-miss: scripted (1 signal) + LLM agent (1 signal) — neither rule fired alone",
+              "natural mouse curve (var 1.634) with pixel-precise clicks (0.4px mean offset) — mouse events injected"
+            ]
+          }
+        },
+        "isHeadlessExpected": false
+      }
+    },
+    {
+      "id": "human-cautious",
+      "actorType": "Human",
+      "expectedVerdict": "Human",
+      "actualVerdict": "Bot — multiple signals",
+      "firedRules": [
+        "isHeadless",
+        "isMultimodalBot"
+      ],
+      "expectedRules": [],
+      "passed": false,
+      "isCalibration": false,
+      "capturedPayload": {
+        "verdictKind": "Bot — multiple signals",
+        "confidence": 95,
+        "badges": [
+          "Headless Browser: WebGL using SwiftShader software renderer (typical of headless Chrome)",
+          "Multimodal Bot: near-miss: scripted (1 signal) + LLM agent (1 signal) — neither rule fired alone",
+          "Multimodal Bot: natural mouse curve (var 3.018) with pixel-precise clicks (0.4px mean offset) — mouse events injected"
+        ],
+        "detections": {
+          "isHeadless": {
+            "detected": true,
+            "severity": "medium",
+            "reasons": [
+              "WebGL using SwiftShader software renderer (typical of headless Chrome)"
+            ]
+          },
+          "isScripted": {
+            "detected": false,
+            "severity": "none",
+            "reasons": []
+          },
+          "isLLMAgent": {
+            "detected": false,
+            "severity": "none",
+            "reasons": []
+          },
+          "isAuthorizedAgent": {
+            "detected": false,
+            "severity": "none",
+            "reasons": []
+          },
+          "isUploadAutomation": {
+            "detected": false,
+            "severity": "none",
+            "reasons": []
+          },
+          "isMultimodalBot": {
+            "detected": true,
+            "severity": "high",
+            "reasons": [
+              "near-miss: scripted (1 signal) + LLM agent (1 signal) — neither rule fired alone",
+              "natural mouse curve (var 3.018) with pixel-precise clicks (0.4px mean offset) — mouse events injected"
+            ]
+          }
+        },
+        "isHeadlessExpected": false
+      }
+    },
+    {
+      "id": "bot-headless-chrome",
+      "actorType": "Bot",
+      "expectedVerdict": "UnauthorizedBot",
+      "actualVerdict": "Bot — multiple signals",
+      "firedRules": [
+        "isHeadless",
+        "isScripted"
+      ],
+      "expectedRules": [
+        "isHeadless"
+      ],
+      "passed": true,
+      "isCalibration": false,
+      "capturedPayload": {
+        "verdictKind": "Bot — multiple signals",
+        "confidence": 95,
+        "badges": [
+          "Headless Browser: WebGL using SwiftShader software renderer (typical of headless Chrome)",
+          "Scripted Bot: zero corrections in 116 chars (humans typo and fix)",
+          "Scripted Bot: first input 2ms after focus (humans need >80ms physiologically)"
+        ],
+        "detections": {
+          "isHeadless": {
+            "detected": true,
+            "severity": "medium",
+            "reasons": [
+              "WebGL using SwiftShader software renderer (typical of headless Chrome)"
+            ]
+          },
+          "isScripted": {
+            "detected": true,
+            "severity": "medium",
+            "reasons": [
+              "zero corrections in 116 chars (humans typo and fix)",
+              "first input 2ms after focus (humans need >80ms physiologically)"
+            ]
+          },
+          "isLLMAgent": {
+            "detected": false,
+            "severity": "none",
+            "reasons": []
+          },
+          "isAuthorizedAgent": {
+            "detected": false,
+            "severity": "none",
+            "reasons": []
+          },
+          "isUploadAutomation": {
+            "detected": false,
+            "severity": "none",
+            "reasons": []
+          },
+          "isMultimodalBot": {
+            "detected": false,
+            "severity": "none",
+            "reasons": []
+          }
+        },
+        "isHeadlessExpected": true
+      }
+    },
+    {
+      "id": "bot-scripted-uniform",
+      "actorType": "Bot",
+      "expectedVerdict": "UnauthorizedBot",
+      "actualVerdict": "Bot — multiple signals",
+      "firedRules": [
+        "isHeadless",
+        "isScripted"
+      ],
+      "expectedRules": [
+        "isScripted"
+      ],
+      "passed": true,
+      "isCalibration": false,
+      "capturedPayload": {
+        "verdictKind": "Bot — multiple signals",
+        "confidence": 95,
+        "badges": [
+          "Headless Browser: WebGL using SwiftShader software renderer (typical of headless Chrome)",
+          "Scripted Bot: zero corrections in 111 chars (humans typo and fix)",
+          "Scripted Bot: first input 2ms after focus (humans need >80ms physiologically)"
+        ],
+        "detections": {
+          "isHeadless": {
+            "detected": true,
+            "severity": "medium",
+            "reasons": [
+              "WebGL using SwiftShader software renderer (typical of headless Chrome)"
+            ]
+          },
+          "isScripted": {
+            "detected": true,
+            "severity": "medium",
+            "reasons": [
+              "zero corrections in 111 chars (humans typo and fix)",
+              "first input 2ms after focus (humans need >80ms physiologically)"
+            ]
+          },
+          "isLLMAgent": {
+            "detected": false,
+            "severity": "none",
+            "reasons": []
+          },
+          "isAuthorizedAgent": {
+            "detected": false,
+            "severity": "none",
+            "reasons": []
+          },
+          "isUploadAutomation": {
+            "detected": false,
+            "severity": "none",
+            "reasons": []
+          },
+          "isMultimodalBot": {
+            "detected": false,
+            "severity": "none",
+            "reasons": []
+          }
+        },
+        "isHeadlessExpected": false
+      }
+    },
+    {
+      "id": "bot-stealth-programmatic",
+      "actorType": "Bot",
+      "expectedVerdict": "UnauthorizedBot",
+      "actualVerdict": "Bot — multiple signals",
+      "firedRules": [
+        "isHeadless",
+        "isMultimodalBot"
+      ],
+      "expectedRules": [
+        "isScripted",
+        "isUploadAutomation"
+      ],
+      "passed": false,
+      "isCalibration": false,
+      "capturedPayload": {
+        "verdictKind": "Bot — multiple signals",
+        "confidence": 95,
+        "badges": [
+          "Headless Browser: WebGL using SwiftShader software renderer (typical of headless Chrome)",
+          "Multimodal Bot: near-miss: scripted (1 signal) + LLM agent (1 signal) — neither rule fired alone"
+        ],
+        "detections": {
+          "isHeadless": {
+            "detected": true,
+            "severity": "medium",
+            "reasons": [
+              "WebGL using SwiftShader software renderer (typical of headless Chrome)"
+            ]
+          },
+          "isScripted": {
+            "detected": false,
+            "severity": "none",
+            "reasons": []
+          },
+          "isLLMAgent": {
+            "detected": false,
+            "severity": "none",
+            "reasons": []
+          },
+          "isAuthorizedAgent": {
+            "detected": false,
+            "severity": "none",
+            "reasons": []
+          },
+          "isUploadAutomation": {
+            "detected": false,
+            "severity": "none",
+            "reasons": []
+          },
+          "isMultimodalBot": {
+            "detected": true,
+            "severity": "medium",
+            "reasons": [
+              "near-miss: scripted (1 signal) + LLM agent (1 signal) — neither rule fired alone"
+            ]
+          }
+        },
+        "isHeadlessExpected": false
+      }
+    },
+    {
+      "id": "bot-multimodal",
+      "actorType": "Bot",
+      "expectedVerdict": "UnauthorizedBot",
+      "actualVerdict": "Bot — multiple signals",
+      "firedRules": [
+        "isHeadless",
+        "isMultimodalBot"
+      ],
+      "expectedRules": [
+        "isMultimodalBot"
+      ],
+      "passed": true,
+      "isCalibration": false,
+      "capturedPayload": {
+        "verdictKind": "Bot — multiple signals",
+        "confidence": 95,
+        "badges": [
+          "Headless Browser: WebGL using SwiftShader software renderer (typical of headless Chrome)",
+          "Multimodal Bot: near-miss: scripted (1 signal) + LLM agent (1 signal) — neither rule fired alone",
+          "Multimodal Bot: natural mouse curve (var 2.850) with pixel-precise clicks (0.4px mean offset) — mouse events injected"
+        ],
+        "detections": {
+          "isHeadless": {
+            "detected": true,
+            "severity": "medium",
+            "reasons": [
+              "WebGL using SwiftShader software renderer (typical of headless Chrome)"
+            ]
+          },
+          "isScripted": {
+            "detected": false,
+            "severity": "none",
+            "reasons": []
+          },
+          "isLLMAgent": {
+            "detected": false,
+            "severity": "none",
+            "reasons": []
+          },
+          "isAuthorizedAgent": {
+            "detected": false,
+            "severity": "none",
+            "reasons": []
+          },
+          "isUploadAutomation": {
+            "detected": false,
+            "severity": "none",
+            "reasons": []
+          },
+          "isMultimodalBot": {
+            "detected": true,
+            "severity": "high",
+            "reasons": [
+              "near-miss: scripted (1 signal) + LLM agent (1 signal) — neither rule fired alone",
+              "natural mouse curve (var 2.850) with pixel-precise clicks (0.4px mean offset) — mouse events injected"
+            ]
+          }
+        },
+        "isHeadlessExpected": false
+      }
+    },
+    {
+      "id": "bot-upload-automation",
+      "actorType": "Bot",
+      "expectedVerdict": "UnauthorizedBot",
+      "actualVerdict": "Bot — multiple signals",
+      "firedRules": [
+        "isHeadless",
+        "isScripted"
+      ],
+      "expectedRules": [
+        "isUploadAutomation"
+      ],
+      "passed": false,
+      "isCalibration": false,
+      "capturedPayload": {
+        "verdictKind": "Bot — multiple signals",
+        "confidence": 95,
+        "badges": [
+          "Headless Browser: WebGL using SwiftShader software renderer (typical of headless Chrome)",
+          "Scripted Bot: zero corrections in 104 chars (humans typo and fix)",
+          "Scripted Bot: first input 1ms after focus (humans need >80ms physiologically)"
+        ],
+        "detections": {
+          "isHeadless": {
+            "detected": true,
+            "severity": "medium",
+            "reasons": [
+              "WebGL using SwiftShader software renderer (typical of headless Chrome)"
+            ]
+          },
+          "isScripted": {
+            "detected": true,
+            "severity": "medium",
+            "reasons": [
+              "zero corrections in 104 chars (humans typo and fix)",
+              "first input 1ms after focus (humans need >80ms physiologically)"
+            ]
+          },
+          "isLLMAgent": {
+            "detected": false,
+            "severity": "none",
+            "reasons": []
+          },
+          "isAuthorizedAgent": {
+            "detected": false,
+            "severity": "none",
+            "reasons": []
+          },
+          "isUploadAutomation": {
+            "detected": false,
+            "severity": "none",
+            "reasons": []
+          },
+          "isMultimodalBot": {
+            "detected": false,
+            "severity": "none",
+            "reasons": []
+          }
+        },
+        "isHeadlessExpected": false
+      }
+    },
+    {
+      "id": "llm-paste-heavy",
+      "actorType": "LLMAgent",
+      "expectedVerdict": "UnauthorizedBot",
+      "actualVerdict": "Bot — multiple signals",
+      "firedRules": [
+        "isHeadless",
+        "isScripted",
+        "isLLMAgent"
+      ],
+      "expectedRules": [
+        "isLLMAgent"
+      ],
+      "passed": true,
+      "isCalibration": false,
+      "capturedPayload": {
+        "verdictKind": "Bot — multiple signals",
+        "confidence": 95,
+        "badges": [
+          "Headless Browser: WebGL using SwiftShader software renderer (typical of headless Chrome)",
+          "Scripted Bot: paste ratio 100% with 294 chars",
+          "Scripted Bot: zero corrections in 294 chars (humans typo and fix)",
+          "Scripted Bot: first input 0ms after focus (humans need >80ms physiologically)",
+          "LLM Agent: paste ratio 100% — LLMs compose then paste",
+          "LLM Agent: 294 chars entered in 2.7s — faster than human baseline",
+          "LLM Agent: 2/3 fields filled in <100ms — LLM batch-fill pattern"
+        ],
+        "detections": {
+          "isHeadless": {
+            "detected": true,
+            "severity": "medium",
+            "reasons": [
+              "WebGL using SwiftShader software renderer (typical of headless Chrome)"
+            ]
+          },
+          "isScripted": {
+            "detected": true,
+            "severity": "high",
+            "reasons": [
+              "paste ratio 100% with 294 chars",
+              "zero corrections in 294 chars (humans typo and fix)",
+              "first input 0ms after focus (humans need >80ms physiologically)"
+            ]
+          },
+          "isLLMAgent": {
+            "detected": true,
+            "severity": "high",
+            "reasons": [
+              "paste ratio 100% — LLMs compose then paste",
+              "294 chars entered in 2.7s — faster than human baseline",
+              "2/3 fields filled in <100ms — LLM batch-fill pattern"
+            ]
+          },
+          "isAuthorizedAgent": {
+            "detected": false,
+            "severity": "none",
+            "reasons": []
+          },
+          "isUploadAutomation": {
+            "detected": false,
+            "severity": "none",
+            "reasons": []
+          },
+          "isMultimodalBot": {
+            "detected": false,
+            "severity": "none",
+            "reasons": []
+          }
+        },
+        "isHeadlessExpected": false
+      }
+    },
+    {
+      "id": "llm-rhythm-agent",
+      "actorType": "LLMAgent",
+      "expectedVerdict": "UnauthorizedBot",
+      "actualVerdict": "Bot — multiple signals",
+      "firedRules": [
+        "isHeadless",
+        "isScripted",
+        "isLLMAgent"
+      ],
+      "expectedRules": [
+        "isLLMAgent"
+      ],
+      "passed": true,
+      "isCalibration": false,
+      "capturedPayload": {
+        "verdictKind": "Bot — multiple signals",
+        "confidence": 95,
+        "badges": [
+          "Headless Browser: WebGL using SwiftShader software renderer (typical of headless Chrome)",
+          "Scripted Bot: zero corrections in 106 chars (humans typo and fix)",
+          "Scripted Bot: first input 2ms after focus (humans need >80ms physiologically)",
+          "LLM Agent: click precision 0.4px mean offset from element center — automation-level targeting",
+          "LLM Agent: machine-speed keystroke burst: 11 consecutive flights <20ms"
+        ],
+        "detections": {
+          "isHeadless": {
+            "detected": true,
+            "severity": "medium",
+            "reasons": [
+              "WebGL using SwiftShader software renderer (typical of headless Chrome)"
+            ]
+          },
+          "isScripted": {
+            "detected": true,
+            "severity": "medium",
+            "reasons": [
+              "zero corrections in 106 chars (humans typo and fix)",
+              "first input 2ms after focus (humans need >80ms physiologically)"
+            ]
+          },
+          "isLLMAgent": {
+            "detected": true,
+            "severity": "high",
+            "reasons": [
+              "click precision 0.4px mean offset from element center — automation-level targeting",
+              "machine-speed keystroke burst: 11 consecutive flights <20ms"
+            ]
+          },
+          "isAuthorizedAgent": {
+            "detected": false,
+            "severity": "none",
+            "reasons": []
+          },
+          "isUploadAutomation": {
+            "detected": false,
+            "severity": "none",
+            "reasons": []
+          },
+          "isMultimodalBot": {
+            "detected": false,
+            "severity": "none",
+            "reasons": []
+          }
+        },
+        "isHeadlessExpected": false
+      }
+    },
+    {
+      "id": "llm-hybrid",
+      "actorType": "LLMAgent",
+      "expectedVerdict": "UnauthorizedBot",
+      "actualVerdict": "Bot — multiple signals",
+      "firedRules": [
+        "isHeadless",
+        "isScripted",
+        "isLLMAgent"
+      ],
+      "expectedRules": [
+        "isLLMAgent"
+      ],
+      "passed": true,
+      "isCalibration": false,
+      "capturedPayload": {
+        "verdictKind": "Bot — multiple signals",
+        "confidence": 95,
+        "badges": [
+          "Headless Browser: WebGL using SwiftShader software renderer (typical of headless Chrome)",
+          "Scripted Bot: paste ratio 96% with 248 chars",
+          "Scripted Bot: first input 1ms after focus (humans need >80ms physiologically)",
+          "LLM Agent: paste ratio 96% — LLMs compose then paste",
+          "LLM Agent: 248 chars entered in 4.6s — faster than human baseline",
+          "LLM Agent: click precision 0.5px mean offset from element center — automation-level targeting"
+        ],
+        "detections": {
+          "isHeadless": {
+            "detected": true,
+            "severity": "medium",
+            "reasons": [
+              "WebGL using SwiftShader software renderer (typical of headless Chrome)"
+            ]
+          },
+          "isScripted": {
+            "detected": true,
+            "severity": "medium",
+            "reasons": [
+              "paste ratio 96% with 248 chars",
+              "first input 1ms after focus (humans need >80ms physiologically)"
+            ]
+          },
+          "isLLMAgent": {
+            "detected": true,
+            "severity": "high",
+            "reasons": [
+              "paste ratio 96% — LLMs compose then paste",
+              "248 chars entered in 4.6s — faster than human baseline",
+              "click precision 0.5px mean offset from element center — automation-level targeting"
+            ]
+          },
+          "isAuthorizedAgent": {
+            "detected": false,
+            "severity": "none",
+            "reasons": []
+          },
+          "isUploadAutomation": {
+            "detected": false,
+            "severity": "none",
+            "reasons": []
+          },
+          "isMultimodalBot": {
+            "detected": false,
+            "severity": "none",
+            "reasons": []
+          }
+        },
+        "isHeadlessExpected": false
+      }
+    },
+    {
+      "id": "authorized-agent-claim",
+      "actorType": "AuthorizedAgent",
+      "expectedVerdict": "AuthorizedAgent",
+      "actualVerdict": "Bot — multiple signals",
+      "firedRules": [
+        "isHeadless",
+        "isScripted",
+        "isAuthorizedAgent"
+      ],
+      "expectedRules": [
+        "isAuthorizedAgent"
+      ],
+      "passed": false,
+      "isCalibration": false,
+      "capturedPayload": {
+        "verdictKind": "Bot — multiple signals",
+        "confidence": 95,
+        "badges": [
+          "Headless Browser: WebGL using SwiftShader software renderer (typical of headless Chrome)",
+          "Scripted Bot: zero corrections in 119 chars (humans typo and fix)",
+          "Scripted Bot: first input 4ms after focus (humans need >80ms physiologically)",
+          "Authorized Agent: agent-sig: v1:test-agent-signature"
+        ],
+        "detections": {
+          "isHeadless": {
+            "detected": true,
+            "severity": "medium",
+            "reasons": [
+              "WebGL using SwiftShader software renderer (typical of headless Chrome)"
+            ]
+          },
+          "isScripted": {
+            "detected": true,
+            "severity": "medium",
+            "reasons": [
+              "zero corrections in 119 chars (humans typo and fix)",
+              "first input 4ms after focus (humans need >80ms physiologically)"
+            ]
+          },
+          "isLLMAgent": {
+            "detected": false,
+            "severity": "none",
+            "reasons": []
+          },
+          "isAuthorizedAgent": {
+            "detected": true,
+            "severity": "high",
+            "reasons": [
+              "agent-sig: v1:test-agent-signature"
+            ]
+          },
+          "isUploadAutomation": {
+            "detected": false,
+            "severity": "none",
+            "reasons": []
+          },
+          "isMultimodalBot": {
+            "detected": false,
+            "severity": "none",
+            "reasons": []
+          }
+        },
+        "isHeadlessExpected": false
+      }
+    },
+    {
+      "id": "calibration-near-miss-scripted",
+      "actorType": "Bot",
+      "expectedVerdict": "UnauthorizedBot",
+      "actualVerdict": "Bot — multiple signals",
+      "firedRules": [
+        "isHeadless",
+        "isMultimodalBot"
+      ],
+      "expectedRules": [
+        "isScripted"
+      ],
+      "passed": false,
+      "isCalibration": true,
+      "capturedPayload": {
+        "verdictKind": "Bot — multiple signals",
+        "confidence": 95,
+        "badges": [
+          "Headless Browser: WebGL using SwiftShader software renderer (typical of headless Chrome)",
+          "Multimodal Bot: near-miss: scripted (1 signal) + LLM agent (1 signal) — neither rule fired alone"
+        ],
+        "detections": {
+          "isHeadless": {
+            "detected": true,
+            "severity": "medium",
+            "reasons": [
+              "WebGL using SwiftShader software renderer (typical of headless Chrome)"
+            ]
+          },
+          "isScripted": {
+            "detected": false,
+            "severity": "none",
+            "reasons": []
+          },
+          "isLLMAgent": {
+            "detected": false,
+            "severity": "none",
+            "reasons": []
+          },
+          "isAuthorizedAgent": {
+            "detected": false,
+            "severity": "none",
+            "reasons": []
+          },
+          "isUploadAutomation": {
+            "detected": false,
+            "severity": "none",
+            "reasons": []
+          },
+          "isMultimodalBot": {
+            "detected": true,
+            "severity": "medium",
+            "reasons": [
+              "near-miss: scripted (1 signal) + LLM agent (1 signal) — neither rule fired alone"
+            ]
+          }
+        },
+        "isHeadlessExpected": false
+      }
+    },
+    {
+      "id": "calibration-bare-playwright-headful",
+      "actorType": "Bot",
+      "expectedVerdict": "UnauthorizedBot",
+      "actualVerdict": "Bot — multiple signals",
+      "firedRules": [
+        "isHeadless",
+        "isMultimodalBot"
+      ],
+      "expectedRules": [
+        "isHeadless"
+      ],
+      "passed": true,
+      "isCalibration": true,
+      "capturedPayload": {
+        "verdictKind": "Bot — multiple signals",
+        "confidence": 95,
+        "badges": [
+          "Headless Browser: WebGL using SwiftShader software renderer (typical of headless Chrome)",
+          "Multimodal Bot: near-miss: scripted (1 signal) + LLM agent (1 signal) — neither rule fired alone",
+          "Multimodal Bot: natural mouse curve (var 1.656) with pixel-precise clicks (0.4px mean offset) — mouse events injected"
+        ],
+        "detections": {
+          "isHeadless": {
+            "detected": true,
+            "severity": "medium",
+            "reasons": [
+              "WebGL using SwiftShader software renderer (typical of headless Chrome)"
+            ]
+          },
+          "isScripted": {
+            "detected": false,
+            "severity": "none",
+            "reasons": []
+          },
+          "isLLMAgent": {
+            "detected": false,
+            "severity": "none",
+            "reasons": []
+          },
+          "isAuthorizedAgent": {
+            "detected": false,
+            "severity": "none",
+            "reasons": []
+          },
+          "isUploadAutomation": {
+            "detected": false,
+            "severity": "none",
+            "reasons": []
+          },
+          "isMultimodalBot": {
+            "detected": true,
+            "severity": "high",
+            "reasons": [
+              "near-miss: scripted (1 signal) + LLM agent (1 signal) — neither rule fired alone",
+              "natural mouse curve (var 1.656) with pixel-precise clicks (0.4px mean offset) — mouse events injected"
+            ]
+          }
+        },
+        "isHeadlessExpected": true
+      }
+    }
+  ],
+  "aggregateMetrics": {
+    "f1": 0.14705882352941177,
+    "f2": 0.1953125,
+    "evaluatedCount": 12,
+    "calibrationCount": 2
+  },
+  "confusionMatrix": {
+    "Human": {
+      "Human": 0,
+      "Bot": 3,
+      "LLMAgent": 0,
+      "AuthorizedAgent": 0
+    },
+    "Bot": {
+      "Human": 0,
+      "Bot": 5,
+      "LLMAgent": 0,
+      "AuthorizedAgent": 0
+    },
+    "LLMAgent": {
+      "Human": 0,
+      "Bot": 3,
+      "LLMAgent": 0,
+      "AuthorizedAgent": 0
+    },
+    "AuthorizedAgent": {
+      "Human": 0,
+      "Bot": 1,
+      "LLMAgent": 0,
+      "AuthorizedAgent": 0
+    }
+  },
+  "perRuleMetrics": [
+    {
+      "ruleName": "isHeadless",
+      "truePositives": 1,
+      "trueNegatives": 0,
+      "falsePositives": 11,
+      "falseNegatives": 0,
+      "accuracy": 0.08333333333333333,
+      "precision": 0.08333333333333333,
+      "recall": 1,
+      "f1": 0.15384615384615385
+    },
+    {
+      "ruleName": "isScripted",
+      "truePositives": 1,
+      "trueNegatives": 4,
+      "falsePositives": 6,
+      "falseNegatives": 1,
+      "accuracy": 0.4166666666666667,
+      "precision": 0.14285714285714285,
+      "recall": 0.5,
+      "f1": 0.22222222222222224
+    },
+    {
+      "ruleName": "isLLMAgent",
+      "truePositives": 3,
+      "trueNegatives": 9,
+      "falsePositives": 0,
+      "falseNegatives": 0,
+      "accuracy": 1,
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+    },
+    {
+      "ruleName": "isUploadAutomation",
+      "truePositives": 0,
+      "trueNegatives": 10,
+      "falsePositives": 0,
+      "falseNegatives": 2,
+      "accuracy": 0.8333333333333334,
+      "precision": 0,
+      "recall": 0,
+      "f1": 0
+    },
+    {
+      "ruleName": "isMultimodalBot",
+      "truePositives": 1,
+      "trueNegatives": 7,
+      "falsePositives": 4,
+      "falseNegatives": 0,
+      "accuracy": 0.6666666666666666,
+      "precision": 0.2,
+      "recall": 1,
+      "f1": 0.33333333333333337
+    },
+    {
+      "ruleName": "isAuthorizedAgent",
+      "truePositives": 1,
+      "trueNegatives": 11,
+      "falsePositives": 0,
+      "falseNegatives": 0,
+      "accuracy": 1,
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+    }
+  ],
+  "perActorTypeMetrics": [
+    {
+      "actorType": "Human",
+      "total": 3,
+      "correct": 0,
+      "accuracy": 0,
+      "misclassifiedAs": {
+        "Bot": 3
+      }
+    },
+    {
+      "actorType": "Bot",
+      "total": 5,
+      "correct": 5,
+      "accuracy": 1,
+      "misclassifiedAs": {}
+    },
+    {
+      "actorType": "LLMAgent",
+      "total": 3,
+      "correct": 3,
+      "accuracy": 1,
+      "misclassifiedAs": {}
+    },
+    {
+      "actorType": "AuthorizedAgent",
+      "total": 1,
+      "correct": 0,
+      "accuracy": 0,
+      "misclassifiedAs": {
+        "Bot": 1
+      }
+    }
+  ]
+}

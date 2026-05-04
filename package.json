@@ -12,6 +12,7 @@
     "build:vercel": "npm run build -w @devanshhq/nyasa && npm run build -w web",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "web": "npm run dev -w web",
+    "benchmark": "npm run benchmark -w @devanshhq/benchmark --",
     "prepare": "husky"
   },
   "devDependencies": {
