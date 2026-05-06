@@ -1,7 +1,7 @@
 import type { BehaviorPayload, Detections } from "@devanshhq/nyasa";
 import { DETECTION_DISPLAY_LABELS } from "@devanshhq/nyasa";
 
-export type VerdictKind = 'analyzing' | 'human' | 'headless' | 'scripted' | 'llm' | 'multiple'
+export type VerdictKind = 'analyzing' | 'human' | 'headless' | 'scripted' | 'llm' | 'authorized' | 'multiple'
 
 export interface Verdict {
   kind: VerdictKind
@@ -29,6 +29,7 @@ const SHORT_LABEL: Record<VerdictKind, string> = {
   headless: DETECTION_DISPLAY_LABELS.isHeadless,
   scripted: DETECTION_DISPLAY_LABELS.isScripted,
   llm: DETECTION_DISPLAY_LABELS.isLLMAgent,
+  authorized: DETECTION_DISPLAY_LABELS.isAuthorizedAgent,
   multiple: 'Bot — multiple signals',
 }
 
@@ -38,6 +39,7 @@ const DESCRIPTION: Record<VerdictKind, string> = {
   headless: 'Headless browser markers detected — likely a Playwright, Puppeteer, or Selenium driver.',
   scripted: 'Mechanical input pattern — uniform timing, no mouse, signature of a scripted automation tool.',
   llm: 'Heavy paste with little organic input — signature of an LLM agent composing then submitting.',
+  authorized: 'Valid agent signature detected. Server validates cryptographically.',
   multiple: 'Two or more independent detection rules fired. High-confidence non-human session.',
 }
 
@@ -60,6 +62,21 @@ export function computeVerdict(payload: BehaviorPayload | null): Verdict {
     signals.behavioral.scroll.depths.length > 0
 
   if (!hasInput && fired.length === 0) return baseAnalyzing()
+
+  // Authorized agent short-circuits: valid signature trumps all bot detections.
+  // Mirrors the SDK's deriveVerdict() behavior.
+  if (detections.isAuthorizedAgent?.detected) {
+    return {
+      kind: 'authorized',
+      label: 'Authorized agent',
+      shortLabel: SHORT_LABEL.authorized,
+      description: DESCRIPTION.authorized,
+      confidence: 100,
+      tone: 'green',
+      firedRules: fired,
+      reasons,
+    }
+  }
 
   if (fired.length === 0) {
     const activity =

@@ -13,7 +13,10 @@ export const humanFastTypist: ScenarioRunner = async (page, groundTruth) => {
     const tx = box.x + box.width / 2
     const ty = box.y + box.height / 2
     await naturalMouseMove(page, mouseX, mouseY, tx, ty, 8)
-    await page.click(selector)
+    await page.mouse.click(
+      tx + randomInt(-10, 10),
+      ty + randomInt(-5, 5),
+    )
     mouseX = tx
     mouseY = ty
   }

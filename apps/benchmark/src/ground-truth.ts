@@ -12,34 +12,39 @@ import type { ScenarioGroundTruth } from './types.js'
  * than representing realistic traffic.
  */
 
-/** Human — natural interaction with variance, corrections, and scrolling. */
+/** Human — natural interaction with variance, corrections, and scrolling.
+ *  Under Playwright, navigator.webdriver=true always fires isHeadless.
+ *  The expected verdict is UnauthorizedBot because of this artifact.
+ *  A PASS means only isHeadless fired — no other bot rules were triggered. */
 const HUMAN_NATURAL: ScenarioGroundTruth = {
   id: 'human-natural',
   actorType: 'Human',
-  expectedVerdict: 'Human',
-  expectedFiredRules: [],
+  expectedVerdict: 'UnauthorizedBot',
+  expectedFiredRules: ['isHeadless'],
   description:
     'Variable typing (50-150ms dwells), mouse with curvature, corrections, scroll, natural rhythm',
   minDurationMs: 3000,
 }
 
-/** Human — fast but still organic, variance present, typo corrections. */
+/** Human — fast but still organic, variance present, typo corrections.
+ *  isHeadless fires due to Playwright's navigator.webdriver=true. */
 const HUMAN_FAST_TYPIST: ScenarioGroundTruth = {
   id: 'human-fast-typist',
   actorType: 'Human',
-  expectedVerdict: 'Human',
-  expectedFiredRules: [],
+  expectedVerdict: 'UnauthorizedBot',
+  expectedFiredRules: ['isHeadless'],
   description:
     'Fast but human dwells (30-80ms), still some variance, corrections present',
   minDurationMs: 2000,
 }
 
-/** Human — slow, deliberate, many corrections, long field dwells. */
+/** Human — slow, deliberate, many corrections, long field dwells.
+ *  isHeadless fires due to Playwright's navigator.webdriver=true. */
 const HUMAN_CAUTIOUS: ScenarioGroundTruth = {
   id: 'human-cautious',
   actorType: 'Human',
-  expectedVerdict: 'Human',
-  expectedFiredRules: [],
+  expectedVerdict: 'UnauthorizedBot',
+  expectedFiredRules: ['isHeadless'],
   description:
     'Slow deliberate corrections, long field dwells',
   minDurationMs: 4000,

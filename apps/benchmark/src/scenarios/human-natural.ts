@@ -11,7 +11,10 @@ export const humanNatural: ScenarioRunner = async (page, groundTruth) => {
   // --- Name field ---
   const nameCenter = await getElementCenter(page, '#field-name')
   await naturalMouseMove(page, mouseX, mouseY, nameCenter.x, nameCenter.y, 12)
-  await page.click('#field-name')
+  await page.mouse.click(
+    nameCenter.x + randomInt(-12, 12),
+    nameCenter.y + randomInt(-6, 6),
+  )
   mouseX = nameCenter.x
   mouseY = nameCenter.y
 
@@ -21,7 +24,10 @@ export const humanNatural: ScenarioRunner = async (page, groundTruth) => {
   // --- Email field with typo correction ---
   const emailCenter = await getElementCenter(page, '#field-email')
   await naturalMouseMove(page, mouseX, mouseY, emailCenter.x, emailCenter.y, 12)
-  await page.click('#field-email')
+  await page.mouse.click(
+    emailCenter.x + randomInt(-12, 12),
+    emailCenter.y + randomInt(-6, 6),
+  )
   mouseX = emailCenter.x
   mouseY = emailCenter.y
 
@@ -37,7 +43,10 @@ export const humanNatural: ScenarioRunner = async (page, groundTruth) => {
   // --- Message field with corrections ---
   const msgCenter = await getElementCenter(page, '#field-message')
   await naturalMouseMove(page, mouseX, mouseY, msgCenter.x, msgCenter.y, 14)
-  await page.click('#field-message')
+  await page.mouse.click(
+    msgCenter.x + randomInt(-12, 12),
+    msgCenter.y + randomInt(-6, 6),
+  )
   mouseX = msgCenter.x
   mouseY = msgCenter.y
 

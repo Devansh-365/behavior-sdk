@@ -2,36 +2,44 @@ import type { ScenarioRunner } from './types.js'
 import { sleep } from './utils.js'
 
 export const botStealthProgrammatic: ScenarioRunner = async (page, groundTruth) => {
-  // Programmatic input via dispatchEvent with empty inputType.
-  // Triggers isScripted (programmatic input > 5 with no known origin)
-  // and isUploadAutomation (programmatic file attach).
-  // NO mouse movement.
+  // NO mouse movement — triggers isScripted "no pointer activity" signal.
+  // Multiple programmatic input events with empty inputType — triggers "programmatic > 5".
+  // Programmatic file attach — triggers isUploadAutomation.
 
-  // Use string-based evaluate to avoid tsx __name transpilation issue
-  await page.evaluate(`
-    (function() {
-      const setInputValue = function(selector, value) {
-        const el = document.querySelector(selector)
-        if (!el) return
-        el.focus()
-        el.value = value
-        el.dispatchEvent(new InputEvent('input', { bubbles: true, inputType: '' }))
-        el.dispatchEvent(new Event('change', { bubbles: true }))
-      }
+  // Dispatch programmatic input events per character to accumulate count > 5
+  const fields: Array<{ selector: string; value: string }> = [
+    { selector: '#field-name', value: 'Stealth Bot' },
+    { selector: '#field-email', value: 'stealth@example.com' },
+    {
+      selector: '#field-message',
+      value: 'This was injected via programmatic dispatchEvent calls with no real user interaction.',
+    },
+  ]
 
-      setInputValue('#field-name', 'Stealth Bot')
-      setInputValue('#field-email', 'stealth@example.com')
-      setInputValue('#field-message', 'This text was injected programmatically via dispatchEvent without any keyboard interaction.')
+  for (const { selector, value } of fields) {
+    await page.locator(selector).click()
+    // Dispatch one programmatic event per character to accumulate count
+    for (const _char of value) {
+      await page.evaluate(
+        ({ sel }: { sel: string }) => {
+          const el = document.querySelector(sel) as HTMLInputElement | HTMLTextAreaElement | null
+          if (!el) return
+          el.dispatchEvent(new InputEvent('input', { bubbles: true, inputType: '' }))
+        },
+        { sel: selector },
+      )
+    }
+  }
 
-      const docInput = document.querySelector('#field-doc')
-      if (docInput) {
-        const dt = new DataTransfer()
-        dt.items.add(new File(['pdf content'], 'document.pdf', { type: 'application/pdf' }))
-        docInput.files = dt.files
-        docInput.dispatchEvent(new Event('change', { bubbles: true }))
-      }
-    })()
-  `)
+  // Attach file programmatically, then wait for upload collector poll (500ms interval)
+  await page.evaluate(() => {
+    const docInput = document.querySelector('#field-doc') as HTMLInputElement | null
+    if (!docInput) return
+    const dt = new DataTransfer()
+    dt.items.add(new File(['pdf content'], 'document.pdf', { type: 'application/pdf' }))
+    docInput.files = dt.files
+  })
+  await sleep(page, 600)
 
   await sleep(page, groundTruth.minDurationMs)
 }

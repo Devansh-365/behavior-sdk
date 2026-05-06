@@ -13,7 +13,10 @@ export const humanCautious: ScenarioRunner = async (page, groundTruth) => {
     const tx = box.x + box.width / 2
     const ty = box.y + box.height / 2
     await naturalMouseMove(page, mouseX, mouseY, tx, ty, 14)
-    await page.click(selector)
+    await page.mouse.click(
+      tx + randomInt(-12, 12),
+      ty + randomInt(-6, 6),
+    )
     mouseX = tx
     mouseY = ty
   }
